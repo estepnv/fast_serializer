@@ -1,0 +1,39 @@
+sudo: false
+
+language: ruby
+
+rvm:
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - jruby-9.2.0.0
+  - ruby-head
+  - jruby-head
+
+matrix:
+  allow_failures:
+    - rvm: jruby-9.2.0.0
+    - rvm: ruby-head
+    - rvm: jruby-head
+
+before_install:
+  - gem update --system -N
+  - gem install bundler:2.0.2 -N
+
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
+script: bundle exec rspec --tag ~performance:true
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+
+cache: bundler
+
+env:
+  global:
+    CC_TEST_REPORTER_ID=a051d3d3560aa2e58cc5efb9f7b8eaafe87f983a1c4d6cb1573fda50ede5b685
+    COVERAGE=1
