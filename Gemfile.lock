@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fast_serializer (0.1.0)
+    fast_serializer_ruby (0.1.0)
 
 GEM
   remote: https://rubygems.org/
@@ -117,7 +117,7 @@ DEPENDENCIES
   activesupport
   factory_bot
   faker
-  fast_serializer!
+  fast_serializer_ruby!
   pry
   rake (~> 10.0)
   rspec (~> 3.0)
