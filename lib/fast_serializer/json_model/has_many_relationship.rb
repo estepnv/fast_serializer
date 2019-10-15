@@ -3,7 +3,7 @@
 module FastSerializer
   module JsonModel
     class HasManyRelationship < Relationship
-      def serialize(resource, params={})
+      def serialize(resource, params = {})
         collection = resource.public_send(method)
         return if collection.nil?
 

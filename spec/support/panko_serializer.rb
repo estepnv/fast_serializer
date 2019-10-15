@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 shared_context :panko_serializer do
   let(:panko_serializer) do
     require 'panko_serializer'

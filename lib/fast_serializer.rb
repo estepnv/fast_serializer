@@ -1,7 +1,9 @@
-require "fast_serializer/version"
-require "fast_serializer/configuration"
-require "fast_serializer/json_model"
-require "fast_serializer/schema"
+# frozen_string_literal: true
+
+require 'fast_serializer/version'
+require 'fast_serializer/configuration'
+require 'fast_serializer/json_model'
+require 'fast_serializer/schema'
 
 module FastSerializer
   class Error < StandardError; end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   module JsonModel
     class Relationship < Attribute

@@ -11,11 +11,11 @@ module FastSerializer
         @opts = opts || {}
       end
 
-      def serialize(resource, params={})
+      def serialize(_resource, _params = {})
         raise NotImplementedError
       end
 
-      def included?(resource, params={})
+      def included?(_resource, _params = {})
         raise NotImplementedError
       end
     end

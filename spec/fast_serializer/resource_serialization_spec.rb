@@ -1,14 +1,16 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'benchmark'
 
-RSpec.describe "Resource serialization"do
+RSpec.describe 'Resource serialization' do
   include_context :fjs_serializer
 
   subject(:serializable_hash) { serializer_instance.serializable_hash }
 
   before { puts Benchmark.measure { serializable_hash } }
 
-  it "serializes resource" do
+  it 'serializes resource' do
     expect(serializable_hash[:email]).to eq(resource.email)
     expect(serializable_hash[:id]).to eq(resource.id)
     expect(serializable_hash[:full_name]).to eq "#{resource.first_name} #{resource.last_name}"

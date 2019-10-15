@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe 'Instance tests' do
@@ -7,7 +9,7 @@ RSpec.describe 'Instance tests' do
     schema = FastSerializer::Schema.new(resource)
     schema.attribute(:id)
     schema.attribute(:email)
-    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_one(:has_one_relationship, serializer: schema)
 
@@ -26,10 +28,10 @@ RSpec.describe 'Instance tests' do
   end
 
   it 'serializes meta' do
-    schema = FastSerializer::Schema.new(resource, meta: { foo: "bar" })
+    schema = FastSerializer::Schema.new(resource, meta: { foo: 'bar' })
     schema.attribute(:id)
     schema.attribute(:email)
-    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_one(:has_one_relationship, serializer: schema)
 
@@ -41,10 +43,10 @@ RSpec.describe 'Instance tests' do
   it 'serializes collection' do
     resources = build_list(:resource, 2)
 
-    schema = FastSerializer::Schema.new(resources, meta: { foo: "bar" })
+    schema = FastSerializer::Schema.new(resources, meta: { foo: 'bar' })
     schema.attribute(:id)
     schema.attribute(:email)
-    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_one(:has_one_relationship, serializer: schema)
 
@@ -65,11 +67,11 @@ RSpec.describe 'Instance tests' do
   it 'serializes collection with root' do
     resources = build_list(:resource, 2)
 
-    schema = FastSerializer::Schema.new(resources, meta: { foo: "bar" })
+    schema = FastSerializer::Schema.new(resources, meta: { foo: 'bar' })
     schema.root(:resources)
     schema.attribute(:id)
     schema.attribute(:email)
-    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_one(:has_one_relationship, serializer: schema)
 
@@ -90,7 +92,7 @@ RSpec.describe 'Instance tests' do
     schema = FastSerializer::Schema.new(resource, include: [:has_many_relationship])
     schema.attribute(:id)
     schema.attribute(:email)
-    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_many(:has_many_relationship, serializer: schema)
     schema.has_one(:has_one_relationship, serializer: schema)
@@ -110,7 +112,7 @@ RSpec.describe 'Instance tests' do
     schema = FastSerializer::Schema.new(resource, include: [])
     schema.attribute(:id)
     schema.attribute(:email)
-    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_many(:has_many_relationship, serializer: schema)
     schema.has_one(:has_one_relationship, serializer: schema)
@@ -130,7 +132,7 @@ RSpec.describe 'Instance tests' do
     schema = FastSerializer::Schema.new(resource)
     schema.attribute(:id)
     schema.attribute(:email)
-    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_one(:has_one_relationship, serializer: schema)
 

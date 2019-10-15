@@ -17,19 +17,17 @@ module FastSerializer
       def serialize(resource, params = {})
         return if resource.nil?
 
-        attributes.values.reduce({}) do |res, attribute|
+        attributes.values.each_with_object({}) do |attribute, res|
           next res unless attribute.included?(resource, params)
 
           val = attribute.serialize(resource, params)
           res[attribute.key] = val if val
-          res
         end
       end
 
-      def included?(resource, params = {})
+      def included?(_resource, _params = {})
         true
       end
-
     end
   end
 end
