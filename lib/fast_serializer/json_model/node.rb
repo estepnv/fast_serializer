@@ -3,7 +3,7 @@
 module FastSerializer
   module JsonModel
     class Node
-      attr_accessor :key, :method
+      attr_accessor :key, :method, :context
 
       def initialize(key: nil, method: nil, opts: {}, **_)
         @key = key
@@ -11,7 +11,7 @@ module FastSerializer
         @opts = opts || {}
       end
 
-      def serialize(_resource, _params = {})
+      def serialize(_resource, _params = {}, context = nil)
         raise NotImplementedError
       end
 

@@ -14,13 +14,13 @@ module FastSerializer
         attributes[attribute.key] = attribute
       end
 
-      def serialize(resource, params = {})
+      def serialize(resource, params = {}, context = nil)
         return if resource.nil?
 
         attributes.values.each_with_object({}) do |attribute, res|
           next res unless attribute.included?(resource, params)
 
-          val = attribute.serialize(resource, params)
+          val = attribute.serialize(resource, params, context)
           res[attribute.key] = val if val
         end
       end

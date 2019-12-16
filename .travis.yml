@@ -19,7 +19,6 @@ matrix:
 
 before_install:
   - gem update --system -N
-  - gem install bundler:2.0.2 -N
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
