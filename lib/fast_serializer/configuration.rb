@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   class Configuration
     attr_accessor :coder
@@ -13,7 +15,7 @@ module FastSerializer
     end
 
     def configure(&block)
-      block.call(config) if !block.nil?
+      block&.call(config)
     end
   end
 end

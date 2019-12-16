@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 shared_context :fjs_serializer do
   let(:resource) { build :resource, :has_one_relation, :has_many_relation }
 
@@ -7,8 +9,8 @@ shared_context :fjs_serializer do
 
       attributes :id, :email, :phone
 
-      attribute(:string_id, if: -> (resource, params) { params[:stringify] }) { |resource, params| resource.id.to_s }
-      attribute(:float_id, unless: -> (resource, params) { params[:stringify] }) { |resource, params| resource.id.to_f }
+      attribute(:string_id, if: ->(_resource, params) { params[:stringify] }) { |resource, _params| resource.id.to_s }
+      attribute(:float_id, unless: ->(_resource, params) { params[:stringify] }) { |resource, _params| resource.id.to_f }
       attribute(:full_name) { |resource, params| params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
 
       has_one :has_one_relationship, serializer: ResourceSerializer

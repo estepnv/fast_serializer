@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe FastSerializer do
@@ -11,7 +13,6 @@ RSpec.describe FastSerializer do
     end
 
     it 'allows to specify schema' do
-
       FastSerializer.configure do |config|
         config.coder = Marshal
       end
@@ -19,7 +20,7 @@ RSpec.describe FastSerializer do
       schema = FastSerializer::Schema.new(resource)
       schema.attribute(:id)
       schema.attribute(:email)
-      schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
+      schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
       schema.attribute(:phone)
       schema.has_one(:has_one_relationship, serializer: schema)
 
@@ -36,6 +37,5 @@ RSpec.describe FastSerializer do
       expect(has_one_relationship_hash[:id]).to eq(resource.has_one_relationship.id)
       expect(has_one_relationship_hash[:phone]).to eq(resource.has_one_relationship.phone)
     end
-
   end
 end

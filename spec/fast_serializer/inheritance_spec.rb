@@ -1,23 +1,32 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
-RSpec.describe "Inherits schema" do
+RSpec.describe 'Inherits schema' do
   include_context :fjs_serializer
 
-  let(:serializer) do
-    resource_serializer
-    class InheritedResourceSerializer < ResourceSerializer
+  before do
+    class ResourceSerializer
       include FastSerializer::Schema::Mixin
-
-      attribute(:yet_another_email) { |resource| resource.email }
+      attribute(:email)
     end
 
-    InheritedResourceSerializer
+    class InheritedResourceSerializer < ResourceSerializer
+      attribute(:yet_another_email, &:email)
+    end
+
+    class InheritedResourceSerializer2 < ResourceSerializer
+      attribute(:yet_another_email_2, &:email)
+    end
   end
 
-  subject(:serializable_hash) { serializer_instance.serializable_hash }
-
   it 'inherits schema' do
-    expect(serializable_hash[:yet_another_email]).to eq(resource.email)
-    expect(serializable_hash[:email]).to eq(resource.email)
+    expect(InheritedResourceSerializer.new(resource).serializable_hash[:yet_another_email]).to eq(resource.email)
+    expect(InheritedResourceSerializer.new(resource).serializable_hash[:email]).to eq(resource.email)
+    expect(InheritedResourceSerializer.new(resource).serializable_hash[:yet_another_email_2]).to be_blank
+
+    expect(InheritedResourceSerializer2.new(resource).serializable_hash[:email]).to eq(resource.email)
+    expect(InheritedResourceSerializer2.new(resource).serializable_hash[:yet_another_email]).to be_blank
+    expect(InheritedResourceSerializer2.new(resource).serializable_hash[:yet_another_email_2]).to eq(resource.email)
   end
 end

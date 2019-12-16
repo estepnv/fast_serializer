@@ -3,8 +3,7 @@
 module FastSerializer
   module JsonModel
     class Array < HasManyRelationship
-
-      def serialize(resources, params={})
+      def serialize(resources, params = {})
         return if resources.nil?
 
         resources.map do |resource|
@@ -12,10 +11,9 @@ module FastSerializer
         end
       end
 
-      def included?(resources, params = {})
+      def included?(_resources, _params = {})
         true
       end
-
     end
   end
 end

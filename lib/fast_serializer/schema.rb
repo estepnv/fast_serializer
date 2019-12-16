@@ -1,25 +1,24 @@
 # frozen_string_literal: true
 
 module FastSerializer
-
   class Schema
-
     module InheritanceSupport
-
       def inherited(subclass)
-        subclass.instance_variable_set(:@_serialization_schema, _serialization_schema)
-        subclass.instance_variable_set(:@_root, _root)
-      end
+        subclass._serialization_schema ||= JsonModel::Object.new
 
+        _serialization_schema.attributes.each do |key, attribute|
+          subclass._serialization_schema.attributes[key] = attribute
+        end
+      end
     end
 
     module SchemaInterface
+      attr_accessor :_root, :_serialization_schema
 
-      def _serialization_schema
+      def init
+        @_root ||= nil
         @_serialization_schema ||= JsonModel::Object.new
       end
-
-      attr_accessor :_root
 
       # @param [Array] attribute_names
       def attributes(*attribute_names)
@@ -45,7 +44,9 @@ module FastSerializer
       # @param [String] attribute_name
       # @param [Hash] opts - attribute options
       def has_one(attribute_name, opts = {})
-        raise ArgumentError, "Serializer is not provided" unless opts[:serializer]
+        unless opts[:serializer]
+          raise ArgumentError, 'Serializer is not provided'
+        end
 
         serialization_schema = opts.delete(:serializer)._serialization_schema
         _serialization_schema.add_attribute JsonModel::HasOneRelationship.new(
@@ -56,12 +57,14 @@ module FastSerializer
         )
       end
 
-      alias_method :belongs_to, :has_one
+      alias belongs_to has_one
 
       # @param [String] attribute_name
       # @param [Hash] opts - attribute options
       def has_many(attribute_name, opts = {})
-        raise ArgumentError, "Serializer is not provided" unless opts[:serializer]
+        unless opts[:serializer]
+          raise ArgumentError, 'Serializer is not provided'
+        end
 
         serialization_schema = opts.delete(:serializer)._serialization_schema
         _serialization_schema.add_attribute JsonModel::HasManyRelationship.new(
@@ -75,7 +78,9 @@ module FastSerializer
       # @param [String] attribute_name
       # @param [Hash] opts - attribute options
       def list(attribute_name, opts = {})
-        raise ArgumentError, "Serializer is not provided" unless opts[:serializer]
+        unless opts[:serializer]
+          raise ArgumentError, 'Serializer is not provided'
+        end
 
         serialization_schema = opts.delete(:serializer)._serialization_schema
         _serialization_schema.add_attribute JsonModel::Array.new(
@@ -96,6 +101,7 @@ module FastSerializer
       attr_accessor :resource, :params
 
       def initialize(resource, params = {})
+        init if respond_to?(:init)
         @resource = resource
         @params = (params || {}).symbolize_keys
         @params[:self] = self
@@ -115,13 +121,9 @@ module FastSerializer
 
         root = (_root || params.delete(:root))
 
-        if root && root.size > 0
-          res = { root => res }
-        end
+        res = { root => res } if root && !root.empty?
 
-        if res.is_a?(Hash) && meta
-          res[:meta] = meta
-        end
+        res[:meta] = meta if res.is_a?(Hash) && meta
 
         res
       end
@@ -159,6 +161,8 @@ module FastSerializer
         base.include Serialization
         base.extend InheritanceSupport
         base.extend SchemaInterface
+
+        base.init
       end
     end
   end

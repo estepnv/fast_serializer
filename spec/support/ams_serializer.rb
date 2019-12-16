@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 shared_context :ams_serializer do
   let(:ams_serializer) do
     class AMSResourceSerializer < ActiveModel::Serializer

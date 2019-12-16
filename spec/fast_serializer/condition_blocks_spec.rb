@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe 'condition blocks' do
@@ -13,7 +15,6 @@ RSpec.describe 'condition blocks' do
     it 'serializes resource' do
       expect(serializable_hash[:string_id]).to eq resource.id.to_s
       expect(serializable_hash.key?(:float_id)).to eq false
-
     end
   end
 
