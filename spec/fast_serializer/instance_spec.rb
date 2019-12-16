@@ -6,14 +6,14 @@ RSpec.describe 'Instance tests' do
   let(:resource) { build :resource, :has_one_relation, :has_many_relation }
 
   it 'allows to specify schema' do
-    schema = FastSerializer::Schema.new(resource)
+    schema = FastSerializer::Schema.new
     schema.attribute(:id)
     schema.attribute(:email)
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
-    schema.has_one(:has_one_relationship, serializer: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
 
-    serializable_hash = schema.serializable_hash
+    serializable_hash = schema.serialize_resource(resource)
 
     expect(serializable_hash[:email]).to eq(resource.email)
     expect(serializable_hash[:id]).to eq(resource.id)
@@ -28,29 +28,29 @@ RSpec.describe 'Instance tests' do
   end
 
   it 'serializes meta' do
-    schema = FastSerializer::Schema.new(resource, meta: { foo: 'bar' })
+    schema = FastSerializer::Schema.new(meta: { foo: 'bar' })
     schema.attribute(:id)
     schema.attribute(:email)
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
-    schema.has_one(:has_one_relationship, serializer: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
 
-    serializable_hash = schema.serializable_hash
+    serializable_hash = schema.serialize_resource(resource)
     expect(serializable_hash[:meta]).to be_present
-    expect(serializable_hash[:has_one_relationship][:meta]).to be_blank
+    expect(serializable_hash[:has_one_relationship][:meta]).to be_present
   end
 
   it 'serializes collection' do
     resources = build_list(:resource, 2)
 
-    schema = FastSerializer::Schema.new(resources, meta: { foo: 'bar' })
+    schema = FastSerializer::Schema.new(meta: { foo: 'bar' })
     schema.attribute(:id)
     schema.attribute(:email)
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
-    schema.has_one(:has_one_relationship, serializer: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
 
-    serializable_hash = schema.serializable_hash
+    serializable_hash = schema.serialize_resource(resources)
     expect(serializable_hash).to be_a(Array)
 
     expect(serializable_hash[0][:email]).to eq(resources[0].email)
@@ -67,15 +67,15 @@ RSpec.describe 'Instance tests' do
   it 'serializes collection with root' do
     resources = build_list(:resource, 2)
 
-    schema = FastSerializer::Schema.new(resources, meta: { foo: 'bar' })
+    schema = FastSerializer::Schema.new(meta: { foo: 'bar' })
     schema.root(:resources)
     schema.attribute(:id)
     schema.attribute(:email)
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
-    schema.has_one(:has_one_relationship, serializer: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
 
-    serializable_hash = schema.serializable_hash[:resources]
+    serializable_hash = schema.serialize_resource(resources)[:resources]
 
     expect(serializable_hash[0][:email]).to eq(resources[0].email)
     expect(serializable_hash[0][:id]).to eq(resources[0].id)
@@ -89,15 +89,15 @@ RSpec.describe 'Instance tests' do
   end
 
   it 'checks include param' do
-    schema = FastSerializer::Schema.new(resource, include: [:has_many_relationship])
+    schema = FastSerializer::Schema.new(include: [:has_many_relationship])
     schema.attribute(:id)
     schema.attribute(:email)
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
-    schema.has_many(:has_many_relationship, serializer: schema)
-    schema.has_one(:has_one_relationship, serializer: schema)
+    schema.has_many(:has_many_relationship, schema: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
 
-    serializable_hash = schema.serializable_hash
+    serializable_hash = schema.serialize_resource(resource)
 
     expect(serializable_hash[:email]).to eq(resource.email)
     expect(serializable_hash[:id]).to eq(resource.id)
@@ -108,16 +108,16 @@ RSpec.describe 'Instance tests' do
     expect(has_one_relationship_hash).to be_blank
   end
 
-  it 'when include param is empty' do
-    schema = FastSerializer::Schema.new(resource, include: [])
+  it 'when include param is nil' do
+    schema = FastSerializer::Schema.new(include: nil)
     schema.attribute(:id)
     schema.attribute(:email)
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
-    schema.has_many(:has_many_relationship, serializer: schema)
-    schema.has_one(:has_one_relationship, serializer: schema)
+    schema.has_many(:has_many_relationship, schema: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
 
-    serializable_hash = schema.serializable_hash
+    serializable_hash = schema.serialize_resource(resource)
 
     expect(serializable_hash[:email]).to eq(resource.email)
     expect(serializable_hash[:id]).to eq(resource.id)
@@ -129,15 +129,15 @@ RSpec.describe 'Instance tests' do
   end
 
   it 'serializes to JSON' do
-    schema = FastSerializer::Schema.new(resource)
+    schema = FastSerializer::Schema.new
     schema.attribute(:id)
     schema.attribute(:email)
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
-    schema.has_one(:has_one_relationship, serializer: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
 
-    expect(schema.serialized_json).to be_a(String)
-    serializable_hash = JSON.parse(schema.serialized_json, symbolize_names: true)
+    expect(schema.serialize_resource_to_json(resource)).to be_a(String)
+    serializable_hash = JSON.parse(schema.serialize_resource_to_json(resource), symbolize_names: true)
 
     expect(serializable_hash[:email]).to eq(resource.email)
     expect(serializable_hash[:id]).to eq(resource.id)

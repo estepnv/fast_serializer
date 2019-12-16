@@ -103,8 +103,8 @@ RSpec.describe 'Mixin tests' do
     expect(has_one_relationship_hash).to be_blank
   end
 
-  it 'when include param is empty' do
-    schema = serializer.new(resource, include: [])
+  it 'when include param is nil' do
+    schema = serializer.new(resource, include: nil)
     serializable_hash = schema.serializable_hash
 
     expect(serializable_hash[:email]).to eq(resource.email)
@@ -136,6 +136,7 @@ RSpec.describe 'Mixin tests' do
 
   it 'is bound to schema context' do
     schema = serializer.new(resource, include_weird_attribute: true)
-    schema.serializable_hash
+    hash = schema.serializable_hash
+    expect(hash[:foobar]).to eq 'foobar'
   end
 end

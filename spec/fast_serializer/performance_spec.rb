@@ -13,13 +13,23 @@ RSpec.describe 'Performance', performance: true do
 
   it 'creates a hash of 100 records under 2ms ' do
     resources = build_list :resource, 100
-    expect { serializer.new(resources).serializable_hash }.to perform_under(2).ms
+
+    expect {
+      serializer.new(resources).serializable_hash
+    }.to perform_faster_than {
+      ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json
+    }.at_least(5).times
   end
 
-  it 'creates a hash of 100 records with dependencies under 3ms ' do
+  it 'creates a hash of 100 records with dependencies under 4ms ' do
     resources = build_list :resource, 100, :has_many_relation, :has_one_relation
-    expect { serializer.new(resources).serializable_hash }.to perform_under(3).ms
-    expect { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json }.to perform_under(13).ms
+
+    expect {
+      serializer.new(resources).serializable_hash
+    }.to perform_faster_than {
+      ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json
+    }.at_least(5).times
+
   end
 
   it 'creates a hash of 1000 records under 10ms ' do
@@ -29,8 +39,11 @@ RSpec.describe 'Performance', performance: true do
 
   it 'creates a hash of 1000 records with dependencies under 25ms ' do
     resources = build_list :resource, 1000, :has_many_relation, :has_one_relation
-    expect { serializer.new(resources).serializable_hash }.to perform_under(25).ms
-    expect { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json }.to perform_under(170).ms
+    expect {
+      serializer.new(resources).serializable_hash
+    }.to perform_faster_than {
+      ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json
+    }.at_least(10).times
   end
 
   # copy-pasted from here

@@ -15,7 +15,7 @@ module FastSerializer
         raise NotImplementedError
       end
 
-      def included?(_resource, _params = {})
+      def included?(_resource, _params = {}, context = nil)
         raise NotImplementedError
       end
     end

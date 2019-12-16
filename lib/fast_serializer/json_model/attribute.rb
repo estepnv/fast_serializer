@@ -15,18 +15,16 @@ module FastSerializer
           end
 
         else
-
           resource.public_send(method)
-
         end
       end
 
-      def included?(resource, params)
+      def included?(resource, params, context = nil)
         return true if @opts[:if].nil? && @opts[:unless].nil?
 
         cond = @opts[:if] || @opts[:unless]
 
-        res = cond.call(resource, params)
+        res = context.instance_exec(resource, params, &cond)
         res = !res unless @opts[:unless].nil?
 
         res
