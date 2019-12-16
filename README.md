@@ -76,7 +76,7 @@ schema.attribute(:id)
 schema.attribute(:email)
 schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}"}
 schema.attribute(:phone)
-schema.has_one(:has_one_relationship, serializer: schema)
+schema.has_one(:has_one_relationship, schema: schema)
 
 schema.serializable_hash
 => {

@@ -7,9 +7,12 @@ module FastSerializer
         collection = resource.public_send(method)
         return if collection.nil?
 
-        collection.map do |relation_resource|
-          serialization_schema.serialize(relation_resource, params, context)
+        if @serializer_klass
+          @serializer_klass.new(collection, params).serializable_hash
+        elsif @schema
+          collection.map { |resource| @schema.serialize_resource(resource, params) }
         end
+
       end
     end
   end
