@@ -3,11 +3,21 @@
 module FastSerializer
   module JsonModel
     class Attribute < Node
-      def serialize(resource, params = {})
+      def serialize(resource, params = {}, context = nil)
+        context ||= self
+
         if method.is_a?(Proc)
-          method.arity.abs == 1 ? method.call(resource) : method.call(resource, params)
+
+          if method.arity.abs == 1
+            context.instance_exec(resource, &method)
+          else
+            context.instance_exec(resource, params, &method)
+          end
+
         else
+
           resource.public_send(method)
+
         end
       end
 

@@ -117,7 +117,7 @@ module FastSerializer
 
       def serializable_hash
         meta = params.delete(:meta)
-        res = schema.serialize(resource, params)
+        res = schema.serialize(resource, params, self)
 
         root = (_root || params.delete(:root))
 
