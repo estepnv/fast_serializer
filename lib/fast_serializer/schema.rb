@@ -12,11 +12,29 @@ module FastSerializer
       @serialization_schema = JsonModel::Object.new
       @params               = (params || {}).symbolize_keys
       @params[:self]        = self
+      @params[:include_index] = {}
+      @params[:exclude_index] = {}
 
-      if @params[:include]
-        if @params[:include].any?
-          @params[:include] = @params[:include].map(&:to_sym)
-        end
+      self.include = @params.delete(:include)
+      self.exclude = @params.delete(:exclude)
+    end
+
+    def include=(list)
+      return if !list
+
+
+      if list.any?
+        @params[:include] = list.map(&:to_sym)
+        @params[:include_index] = @params[:include].map { |key| [key, nil] }.to_h
+      end
+    end
+
+    def exclude=(list)
+      return if !list
+
+      if list.any?
+        @params[:exclude] = list.map(&:to_sym)
+        @params[:exclude_index] = @params[:exclude].map { |key| [key, nil] }.to_h
       end
     end
 

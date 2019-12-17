@@ -18,9 +18,19 @@ module FastSerializer
       end
 
       def include_relation?(params)
-        return true if params[:include].nil?
+        include?(params) && !exclude?(params)
+      end
 
-        params[:include].include?(key)
+      def exclude?(params)
+        return false if params[:exclude].nil?
+        return false if params[:exclude].empty?
+        params[:exclude_index].key?(key)
+      end
+
+      def include?(params)
+        return true if params[:include].nil?
+        return false if params[:include].empty?
+        params[:include_index].has_key?(key)
       end
     end
   end
