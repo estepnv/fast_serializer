@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fast_serializer_ruby (0.3.0)
+    fast_serializer_ruby (0.4.0)
 
 GEM
   remote: https://rubygems.org/
@@ -124,3 +124,5 @@ DEPENDENCIES
   rspec-benchmark
   simplecov
 
+BUNDLED WITH
+   2.0.2
