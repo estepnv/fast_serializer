@@ -24,7 +24,16 @@ module FastSerializer
 
         cond = @opts[:if] || @opts[:unless]
 
-        res = context.instance_exec(resource, params, &cond)
+        res = if cond.is_a?(Proc)
+                if cond.arity.abs == 1
+                  context.instance_exec(resource, &cond)
+                else
+                  context.instance_exec(resource, params, &cond)
+                end
+              else
+                context.public_send(cond)
+              end
+
         res = !res unless @opts[:unless].nil?
 
         res

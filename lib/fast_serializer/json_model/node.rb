@@ -6,7 +6,7 @@ module FastSerializer
       attr_accessor :key, :method, :context
 
       def initialize(key: nil, method: nil, opts: {}, **_)
-        @key = key
+        @key = key&.to_sym
         @method = method || key
         @opts = opts || {}
       end

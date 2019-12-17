@@ -106,6 +106,32 @@ RSpec.describe 'Instance tests' do
 
     has_one_relationship_hash = serializable_hash[:has_one_relationship]
     expect(has_one_relationship_hash).to be_blank
+
+    has_many_relationship_hash = serializable_hash[:has_many_relationship]
+    expect(has_many_relationship_hash).to be_present
+  end
+
+  it 'checks include param' do
+    schema = FastSerializer::Schema.new(exclude: [:has_many_relationship])
+    schema.attribute(:id)
+    schema.attribute(:email)
+    schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
+    schema.attribute(:phone)
+    schema.has_many(:has_many_relationship, schema: schema)
+    schema.has_one(:has_one_relationship, schema: schema)
+
+    serializable_hash = schema.serialize_resource(resource)
+
+    expect(serializable_hash[:email]).to eq(resource.email)
+    expect(serializable_hash[:id]).to eq(resource.id)
+    expect(serializable_hash[:full_name]).to eq "#{resource.first_name} #{resource.last_name}"
+    expect(serializable_hash[:phone]).to eq(resource.phone)
+
+    has_one_relationship_hash = serializable_hash[:has_one_relationship]
+    expect(has_one_relationship_hash).to be_present
+
+    has_many_relationship_hash = serializable_hash[:has_many_relationship]
+    expect(has_many_relationship_hash).to be_blank
   end
 
   it 'when include param is nil' do

@@ -12,11 +12,29 @@ module FastSerializer
       @serialization_schema = JsonModel::Object.new
       @params               = (params || {}).symbolize_keys
       @params[:self]        = self
+      @params[:include_index] = {}
+      @params[:exclude_index] = {}
 
-      if @params[:include]
-        if @params[:include].any?
-          @params[:include] = @params[:include].map(&:to_sym)
-        end
+      self.include = @params.delete(:include)
+      self.exclude = @params.delete(:exclude)
+    end
+
+    def include=(list)
+      return if !list
+
+
+      if list.any?
+        @params[:include] = list.map(&:to_sym)
+        @params[:include_index] = @params[:include].map { |key| [key, nil] }.to_h
+      end
+    end
+
+    def exclude=(list)
+      return if !list
+
+      if list.any?
+        @params[:exclude] = list.map(&:to_sym)
+        @params[:exclude_index] = @params[:exclude].map { |key| [key, nil] }.to_h
       end
     end
 
@@ -101,6 +119,7 @@ module FastSerializer
       meta        = _params_dup.delete(:meta)
 
       is_collection = resource.respond_to?(:size) && !resource.respond_to?(:each_pair)
+      is_collection = params.delete(:is_collection) if params.has_key?(:is_collection)
 
       _serialization_schema = if is_collection
                                 JsonModel::Array.new(schema: serialization_schema)
@@ -118,7 +137,7 @@ module FastSerializer
     end
 
     def serialize_resource_to_json(resource, params = {}, context = self)
-      FastSerializer.config.coder.dump(serialize_resource(resource, params))
+      FastSerializer.config.coder.dump(serialize_resource(resource, params, context))
     end
 
     module Mixin
@@ -147,11 +166,13 @@ module FastSerializer
           self.params   = params || {}
         end
 
-        def serializable_hash
+        def serializable_hash(opts = {})
+          self.params = params.merge(opts)
           self.class.__schema__.serialize_resource(resource, params, self)
         end
 
-        def serialized_json
+        def serialized_json(opts = {})
+          self.params = params.merge(opts)
           self.class.__schema__.serialize_resource_to_json(resource, params, self)
         end
 
