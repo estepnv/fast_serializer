@@ -11,7 +11,7 @@ RSpec.describe 'Mixin tests' do
 
       attribute(:id)
       attribute(:email)
-      attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
+      attribute(:full_name) { "#{resource.first_name} #{resource.last_name}" }
       attribute(:phone)
       has_one(:has_one_relationship, serializer: self)
       has_many(:has_many_relationship, serializer: self)

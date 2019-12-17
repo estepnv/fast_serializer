@@ -5,13 +5,15 @@ require 'forwardable'
 module FastSerializer
 
   class Schema
+    Context = Struct.new(:resource, :params)
+
     attr_accessor :_root, :serialization_schema, :params
 
     def initialize(params = {})
-      @root                 = nil
-      @serialization_schema = JsonModel::Object.new
-      @params               = (params || {}).symbolize_keys
-      @params[:self]        = self
+      @root                   = nil
+      @serialization_schema   = JsonModel::Object.new
+      @params                 = (params || {}).symbolize_keys
+      @params[:self]          = self
       @params[:include_index] = {}
       @params[:exclude_index] = {}
 
@@ -24,7 +26,7 @@ module FastSerializer
 
 
       if list.any?
-        @params[:include] = list.map(&:to_sym)
+        @params[:include]       = list.map(&:to_sym)
         @params[:include_index] = @params[:include].map { |key| [key, nil] }.to_h
       end
     end
@@ -33,7 +35,7 @@ module FastSerializer
       return if !list
 
       if list.any?
-        @params[:exclude] = list.map(&:to_sym)
+        @params[:exclude]       = list.map(&:to_sym)
         @params[:exclude_index] = @params[:exclude].map { |key| [key, nil] }.to_h
       end
     end
@@ -121,15 +123,24 @@ module FastSerializer
       is_collection = resource.respond_to?(:size) && !resource.respond_to?(:each_pair)
       is_collection = params.delete(:is_collection) if params.has_key?(:is_collection)
 
-      _serialization_schema = if is_collection
-                                JsonModel::Array.new(schema: serialization_schema)
-                              else
-                                serialization_schema
-                              end
+      root = (_root || _params_dup.delete(:root))
 
-      res        = _serialization_schema.serialize(resource, _params_dup, context)
-      root       = (_root || _params_dup.delete(:root))
-      res        = { root => res } if root && !root.empty?
+      res = if is_collection
+
+              if !context.is_a?(self.class)
+                # need to bind context
+                resource.map { |entry| context.class.new(entry, _params_dup).serializable_hash }
+              else
+                JsonModel::Array.new(schema: serialization_schema).serialize(resource, _params_dup, context)
+              end
+
+            else
+
+              serialization_schema.serialize(resource, _params_dup, context)
+
+            end
+
+      res  = { root => res } if root && !root.empty?
 
       res[:meta] = meta if res.is_a?(Hash) && meta
 
