@@ -1,3 +1,4 @@
+[![Gem Version](https://badge.fury.io/rb/fast_serializer_ruby.svg)](https://badge.fury.io/rb/fast_serializer_ruby)
 [![Build Status](https://travis-ci.org/estepnv/fast_serializer.svg?branch=master)](https://travis-ci.org/estepnv/fast_serializer)
 [![Maintainability](https://api.codeclimate.com/v1/badges/74cca93390234e619cf5/maintainability)](https://codeclimate.com/github/estepnv/fast_serializer/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/74cca93390234e619cf5/test_coverage)](https://codeclimate.com/github/estepnv/fast_serializer/test_coverage)
