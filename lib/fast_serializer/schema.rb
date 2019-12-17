@@ -119,6 +119,7 @@ module FastSerializer
       meta        = _params_dup.delete(:meta)
 
       is_collection = resource.respond_to?(:size) && !resource.respond_to?(:each_pair)
+      is_collection = params.delete(:is_collection) if params.has_key?(:is_collection)
 
       _serialization_schema = if is_collection
                                 JsonModel::Array.new(schema: serialization_schema)
@@ -136,7 +137,7 @@ module FastSerializer
     end
 
     def serialize_resource_to_json(resource, params = {}, context = self)
-      FastSerializer.config.coder.dump(serialize_resource(resource, params))
+      FastSerializer.config.coder.dump(serialize_resource(resource, params, context))
     end
 
     module Mixin
@@ -165,11 +166,13 @@ module FastSerializer
           self.params   = params || {}
         end
 
-        def serializable_hash
+        def serializable_hash(opts = {})
+          self.params = params.merge(opts)
           self.class.__schema__.serialize_resource(resource, params, self)
         end
 
-        def serialized_json
+        def serialized_json(opts = {})
+          self.params = params.merge(opts)
           self.class.__schema__.serialize_resource_to_json(resource, params, self)
         end
 

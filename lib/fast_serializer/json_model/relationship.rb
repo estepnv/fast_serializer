@@ -14,7 +14,7 @@ module FastSerializer
       end
 
       def included?(resource, params, context)
-        super(resource, params) && include_relation?(params)
+        super && include_relation?(params)
       end
 
       def include_relation?(params)
