@@ -31,5 +31,5 @@ cache: bundler
 
 env:
   global:
-    CC_TEST_REPORTER_ID=a051d3d3560aa2e58cc5efb9f7b8eaafe87f983a1c4d6cb1573fda50ede5b685
+    CC_TEST_REPORTER_ID=99325a42b78ef51a9d51574d20dbcd6acdfe75c8568f1433f73b61f17149e05d
     COVERAGE=1
