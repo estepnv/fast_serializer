@@ -5,7 +5,6 @@ require 'forwardable'
 module FastSerializer
 
   class Schema
-    Context = Struct.new(:resource, :params)
 
     attr_accessor :_root, :serialization_schema, :params
 
@@ -176,6 +175,8 @@ module FastSerializer
           self.resource = resource
           self.params   = params || {}
         end
+
+        alias_method :object, :resource
 
         def serializable_hash(opts = {})
           self.params = params.merge(opts)

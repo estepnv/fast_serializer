@@ -2,48 +2,102 @@
 
 require 'spec_helper'
 require 'benchmark'
+require 'benchmark/memory'
+
+class AMSResourceSerializer < ActiveModel::Serializer
+  attributes :id, :email, :phone
+
+  attribute(:string_id, if: -> { instance_options[:stringify] }) { object.id.to_s }
+  attribute(:float_id, unless: -> { instance_options[:stringify] }) { object.id.to_f }
+  attribute(:full_name) { instance_options[:only_first_name] ? object.first_name : "#{object.first_name} #{object.last_name}" }
+
+  has_one :has_one_relationship, serializer: AMSResourceSerializer
+  has_many :has_many_relationship, serializer: AMSResourceSerializer
+end
+
+class FSResourceSerializer
+  include FastSerializer::Schema::Mixin
+
+  attributes :id, :email, :phone
+
+  attribute(:string_id, if: proc { params[:stringify] }) { resource.id.to_s }
+  attribute(:float_id, unless: proc { params[:stringify] }) { resource.id.to_f }
+  attribute(:full_name) { params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
+
+  has_one :has_one_relationship, serializer: FSResourceSerializer
+  has_many :has_many_relationship, serializer: FSResourceSerializer
+end
 
 RSpec.describe 'Performance', performance: true do
-  include_context :fjs_serializer
-  include_context :ams_serializer
-  include_context :panko_serializer
 
   before(:all) { GC.disable }
   before(:all) { GC.enable }
 
-  it 'creates a hash of 100 records under 2ms ' do
-    resources = build_list :resource, 100
+  describe 'speed benchmarks' do
+    it 'creates a hash of 100 records under 2ms ' do
+      resources = build_list :resource, 100
 
-    expect {
-      serializer.new(resources).serializable_hash
-    }.to perform_faster_than {
-      ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json
-    }.at_least(5).times
+      expect {
+        FSResourceSerializer.new(resources).serializable_hash
+      }.to perform_faster_than {
+        ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json
+      }.at_least(5).times
+    end
+
+    it 'creates a hash of 100 records with dependencies under 4ms ' do
+      resources = build_list :resource, 100, :has_many_relation, :has_one_relation
+
+      expect {
+        FSResourceSerializer.new(resources).serializable_hash
+      }.to perform_faster_than {
+        ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json
+      }.at_least(5).times
+
+    end
+
+    it 'creates a hash of 1000 records under 15ms ' do
+      resources = build_list :resource, 1000
+      expect { FSResourceSerializer.new(resources).serializable_hash }.to perform_under(15).ms
+    end
+
+    it 'creates a hash of 1000 records with dependencies under 25ms ' do
+      resources = build_list :resource, 1000, :has_many_relation, :has_one_relation
+      expect {
+        FSResourceSerializer.new(resources).serializable_hash
+      }.to perform_faster_than {
+        ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json
+      }.at_least(10).times
+    end
   end
 
-  it 'creates a hash of 100 records with dependencies under 4ms ' do
-    resources = build_list :resource, 100, :has_many_relation, :has_one_relation
+  describe 'memory utilization' do
 
-    expect {
-      serializer.new(resources).serializable_hash
-    }.to perform_faster_than {
-      ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json
-    }.at_least(5).times
+    allocation_factor = 2.5
+    it "allocates less memory #{allocation_factor}x" do
 
-  end
+      resources = build_list :resource, 100
 
-  it 'creates a hash of 1000 records under 10ms ' do
-    resources = build_list :resource, 1000
-    expect { serializer.new(resources).serializable_hash }.to perform_under(7).ms
-  end
+      20.times { FSResourceSerializer.new(resources).serializable_hash }
+      20.times { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json }
 
-  it 'creates a hash of 1000 records with dependencies under 25ms ' do
-    resources = build_list :resource, 1000, :has_many_relation, :has_one_relation
-    expect {
-      serializer.new(resources).serializable_hash
-    }.to perform_faster_than {
-      ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer).as_json
-    }.at_least(10).times
+      job = Benchmark::Memory::Job.new
+
+      job.report('fast-serializer') { FSResourceSerializer.new(resources).serializable_hash }
+      job.report('active-model-serializer') { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json }
+
+      job.run
+      job.full_report
+      job.compare!
+      job.run_comparison
+
+      measurements_map = job.full_report.comparison.entries.map { |comp_entry| [comp_entry.label, comp_entry.measurement] }.to_h
+
+      allocation = -> (name) { measurements_map[name].objects.allocated }
+      mem_cons = -> (name) { measurements_map[name].memory.allocated }
+
+      expect(allocation.('fast-serializer') * allocation_factor).to be < allocation.('active-model-serializer')
+      expect(mem_cons.('fast-serializer') * allocation_factor) .to be < mem_cons.('active-model-serializer')
+    end
   end
 
   # copy-pasted from here
@@ -98,31 +152,15 @@ RSpec.describe 'Performance', performance: true do
       data
     end
 
-    def run_json_benchmark(message, movie_count, serializers)
-      data = Hash[serializers.keys.collect { |k| [k, { json: nil, time: nil, speed_factor: nil }] }]
-
-      serializers.each_pair do |k, v|
-        json_method = SERIALIZERS[k].key?(:json_method) ? SERIALIZERS[k][:json_method] : :to_json
-        data[k][:time] = Benchmark.measure { data[k][:json] = v.public_send(json_method) }.real * 1000
-      end
-
-      print_stats(message, movie_count, data)
-
-      data
-    end
-
     context 'when comparing with AMS 0.10.x' do
       [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610].each do |resource_count|
         it "should serialize #{resource_count} records atleast #{SERIALIZERS[:ams][:speed_factor]} times faster than AMS" do
           resources = build_list :resource, resource_count
 
           serializers = {
-            fjs: fjs_serializer.new(resources),
-            ams: ActiveModelSerializers::SerializableResource.new(resources, each_serializer: ams_serializer)
+            fjs: FSResourceSerializer.new(resources),
+            ams: ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer)
           }
-
-          # message = "Serialize to JSON string #{resource_count} records"
-          # json_benchmarks  = run_json_benchmark(message, resource_count, serializers)
 
           message = "Serialize to Ruby Hash #{resource_count} records"
           hash_benchmarks = run_hash_benchmark(message, resource_count, serializers)
@@ -142,16 +180,13 @@ RSpec.describe 'Performance', performance: true do
 
           serializers = {
             # panko: Panko::ArraySerializer.new(resources, each_serializer: panko_serializer),
-            fjs: fjs_serializer.new(resources, options),
+            fjs: FSResourceSerializer.new(resources, options),
             ams: ActiveModelSerializers::SerializableResource.new(
               resources,
-              each_serializer: ams_serializer,
+              each_serializer: AMSResourceSerializer,
               **options
             )
           }
-
-          # message = "Serialize to JSON string #{resource_count} with includes and meta"
-          # json_benchmarks = run_json_benchmark(message, resource_count, serializers)
 
           message = "Serialize to Ruby Hash #{resource_count} with includes and meta"
           hash_benchmarks = run_hash_benchmark(message, resource_count, serializers)

@@ -9,9 +9,9 @@ shared_context :fjs_serializer do
 
       attributes :id, :email, :phone
 
-      attribute(:string_id, if: ->(_resource, params) { params[:stringify] }) { |resource, _params| resource.id.to_s }
-      attribute(:float_id, unless: ->(_resource, params) { params[:stringify] }) { |resource, _params| resource.id.to_f }
-      attribute(:full_name) { |resource, params| params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
+      attribute(:string_id, if: proc { params[:stringify] }) { resource.id.to_s }
+      attribute(:float_id, unless: proc { params[:stringify] }) { resource.id.to_f }
+      attribute(:full_name) { params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
 
       has_one :has_one_relationship, serializer: ResourceSerializer
       has_many :has_many_relationship, serializer: ResourceSerializer

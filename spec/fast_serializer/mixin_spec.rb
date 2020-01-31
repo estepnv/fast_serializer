@@ -13,10 +13,11 @@ RSpec.describe 'Mixin tests' do
       attribute(:email)
       attribute(:full_name) { "#{resource.first_name} #{resource.last_name}" }
       attribute(:phone)
+      attribute(:object_first_name, if: proc { params[:object] }) { object.first_name }
       has_one(:has_one_relationship, serializer: self)
       has_many(:has_many_relationship, serializer: self)
 
-      attribute(:foobar, if: proc { |_, params| params[:include_weird_attribute] } ) do
+      attribute(:foobar, if: proc { params[:include_weird_attribute] } ) do
         weird_attribute
       end
 
@@ -42,6 +43,11 @@ RSpec.describe 'Mixin tests' do
     expect(has_one_relationship_hash[:full_name]).to eq("#{resource.has_one_relationship.first_name} #{resource.has_one_relationship.last_name}")
     expect(has_one_relationship_hash[:id]).to eq(resource.has_one_relationship.id)
     expect(has_one_relationship_hash[:phone]).to eq(resource.has_one_relationship.phone)
+  end
+
+  it 'implements ams-like #object API' do
+    serializable_hash = serializer.new(resource, object: true).serializable_hash
+    expect(serializable_hash[:object_first_name]).to eq resource.first_name
   end
 
   it 'serializes meta' do

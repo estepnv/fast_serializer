@@ -5,12 +5,12 @@
 
 # fast_serializer
 
-fast_serializer is a lightweight ruby objects serializer. 
-
+fast_serializer is a lightweight ruby objects serializer.
 It has zero dependencies and written in pure ruby.
-That's why it's so performant.
 
+Features:
 - running on ruby 2.6 is **at least 3 times faster** than AMS (benchmarks was borrowed from fast_jsonapi repository)
+- running on ruby 2.6 it consumer 2.5 times less RAM
 - running on jruby 9.2.7.0 **is at least 15 times faster** than AMS after warming up
 
 
@@ -38,13 +38,13 @@ fast_serializer supports default schema definition using class methods
 class ResourceSerializer
   include FastSerializer::Schema::Mixin
   root :resource
-  
+
   attributes :id, :email, :phone
-  
-  attribute(:string_id, if: -> (resource, params) { params[:stringify] }) { |resource, params| resource.id.to_s }
-  attribute(:float_id, unless: -> (resource, params) { params[:stringify] }) { |resource, params| resource.id.to_f }
-  attribute(:full_name) { |resource, params| params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
-  
+
+  attribute(:string_id, if: { params[:stringify] }) { resource.id.to_s }
+  attribute(:float_id, unless: { params[:stringify] }) { resource.id.to_f }
+  attribute(:full_name) { params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
+
   has_one :has_one_relationship, serializer: ResourceSerializer
   has_many :has_many_relationship, serializer: ResourceSerializer
 end
@@ -52,14 +52,14 @@ end
 ResourceSerializer.new(resource, meta: {foo: "bar"}, only_first_name: false, stringify: true).serializable_hash
 => {
      :resource => {
-       :id => 7873392581, 
-       :email => "houston@luettgen.info", 
-       :full_name => "Jamar Graham", 
-       :phone => "627.051.6039 x1475", 
+       :id => 7873392581,
+       :email => "houston@luettgen.info",
+       :full_name => "Jamar Graham",
+       :phone => "627.051.6039 x1475",
        :has_one_relationship => {
-         :id => 6218322696, 
-         :email=>"terrellrobel@pagac.info", 
-         :full_name => "Clay Kuphal", 
+         :id => 6218322696,
+         :email=>"terrellrobel@pagac.info",
+         :full_name => "Clay Kuphal",
          :phone => "1-604-682-0732 x882"
        }
      },
@@ -81,14 +81,14 @@ schema.has_one(:has_one_relationship, schema: schema)
 
 schema.serializable_hash
 => {
-     :id => 7873392581, 
-     :email => "houston@luettgen.info", 
-     :full_name => "Jamar Graham", 
-     :phone => "627.051.6039 x1475", 
+     :id => 7873392581,
+     :email => "houston@luettgen.info",
+     :full_name => "Jamar Graham",
+     :phone => "627.051.6039 x1475",
      :has_one_relationship => {
-       :id => 6218322696, 
-       :email=>"terrellrobel@pagac.info", 
-       :full_name => "Clay Kuphal", 
+       :id => 6218322696,
+       :email=>"terrellrobel@pagac.info",
+       :full_name => "Clay Kuphal",
        :phone => "1-604-682-0732 x882"
      }
    }
