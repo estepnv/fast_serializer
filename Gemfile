@@ -4,16 +4,20 @@ source 'https://rubygems.org'
 
 git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
-# Specify your gem's dependencies in fast_serializer.gemspec
 gemspec
 
-gem 'active_model_serializers', '~> 0.10.0'
-gem 'factory_bot'
-gem 'faker'
-gem 'pry'
-gem 'rspec', '~> 3.0'
-gem 'rspec-benchmark'
-gem 'pry-byebug', group: :development
-gem 'allocation_stats'
-gem 'simplecov'
-gem 'benchmark-memory', '~>0.1'
+group :development do
+  gem 'pry-byebug', '~> 3.7.0'
+  gem 'pry'
+end
+
+group :test do
+  gem 'active_model_serializers', '~> 0.10.0'
+  gem 'factory_bot'
+  gem 'faker'
+  gem 'allocation_stats'
+  gem 'simplecov', '~> 0.17.1'
+  gem 'benchmark-memory', '~> 0.1'
+  gem 'rspec', '~> 3.0'
+  gem 'rspec-benchmark'
+end

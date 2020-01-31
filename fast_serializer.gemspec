@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Evgeny Stepanov']
   spec.email         = ['estepnv@icloud.com']
 
-  spec.summary       = 'Yet another serializer gem, but fast'
-  spec.description   = 'fast_serializer is a lightweight ruby objects serializer.'
+  spec.summary       = 'fast_serializer is a lightweight ruby objects serializer.'
+  spec.description   = 'This library intends to solve such a typical and on the other hand important problem as efficient ruby object to hash transformation.'
   spec.homepage      = 'https://github.com/estepnv/fast_serializer'
   spec.license       = 'MIT'
 

@@ -24,14 +24,26 @@ module FastSerializer
           @method_name = "__#{key}__"
           @method_arity = method.arity.abs
           @mixin = Module.new
-          @mixin.define_method @method_name, &method
+
+          if FastSerializer.config.ruby_ver.is_2_4_or_less
+            @mixin.redefine_method @method_name, &method
+          else
+            @mixin.define_method @method_name, &method
+          end
+
         end
 
         if !cond.nil? && cond.is_a?(Proc)
           @cond_method_name = "__#{key}_cond__"
           @cond_arity = cond.arity.abs
           @mixin ||= Module.new
-          @mixin.define_method @cond_method_name, &cond
+
+          if FastSerializer.config.ruby_ver.is_2_4_or_less
+            @mixin.redefine_method @cond_method_name, &cond
+          else
+            @mixin.define_method @cond_method_name, &cond
+          end
+
         end
 
       end

@@ -4,12 +4,21 @@ require 'json'
 
 module FastSerializer
   class Configuration
-    attr_reader :coder
+
+    RubyVer = Struct.new(:major, :feature, :fix) do
+
+      def is_2_4_or_less
+        major == 2 && feature <= 4
+      end
+    end
+
+    attr_reader :coder, :ruby_ver
     attr_accessor :strict
 
     def initialize
       @coder = JSON
       @strict = false
+      @ruby_ver = RubyVer.new(*RUBY_VERSION.split(".").map(&:to_i))
     end
 
     def coder=(obj)
