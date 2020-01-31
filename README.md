@@ -5,13 +5,21 @@
 
 # fast_serializer
 
-fast_serializer is a lightweight ruby objects serializer. 
+`fast_serializer_ruby` is a lightweight ruby object to hash transformer.
+This library intends to solve such a typical and on the other hand important problem as efficient ruby object to hash transformation.
 
-It has zero dependencies and written in pure ruby.
-That's why it's so performant.
-
-- running on ruby 2.6 is **at least 3 times faster** than AMS (benchmarks was borrowed from fast_jsonapi repository)
+## Performance 🚀
+- running on ruby 2.6 is **at least 5 times faster** than AMS (benchmarks was borrowed from fast_jsonapi repository)
+- running on ruby 2.6 it consumes **3 times less RAM**
 - running on jruby 9.2.7.0 **is at least 15 times faster** than AMS after warming up
+
+## Compatibility 👌
+I tried to keep the API as close as possible to active_model_serializer implementation because we all got used to it.
+
+## Features
+- conditional rendering
+- inheritence
+- included/excluded associations
 
 
 ## Installation
@@ -19,7 +27,7 @@ That's why it's so performant.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'fast_serializer'
+gem 'fast_serializer_ruby'
 ```
 
 And then execute:
@@ -28,38 +36,43 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install fast_serializer
+    $ gem install fast_serializer_ruby
 
 ## Usage
 
-fast_serializer supports default schema definition using class methods
+`fast_serializer` supports default schema definition using class methods
 
 ```ruby
 class ResourceSerializer
   include FastSerializer::Schema::Mixin
+
   root :resource
-  
+
   attributes :id, :email, :phone
-  
-  attribute(:string_id, if: -> (resource, params) { params[:stringify] }) { |resource, params| resource.id.to_s }
-  attribute(:float_id, unless: -> (resource, params) { params[:stringify] }) { |resource, params| resource.id.to_f }
-  attribute(:full_name) { |resource, params| params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
-  
+
+  attribute(:string_id, if: -> { params[:stringify] }) { resource.id.to_s }
+  attribute(:float_id, unless: :stringify?) { object.id.to_f }
+  attribute(:full_name) { params[:only_first_name] ? resource.first_name : "#{resource.first_name} #{resource.last_name}" }
+
   has_one :has_one_relationship, serializer: ResourceSerializer
   has_many :has_many_relationship, serializer: ResourceSerializer
+
+  def stringify?
+    params[:stringify]
+  end
 end
 
-ResourceSerializer.new(resource, meta: {foo: "bar"}, only_first_name: false, stringify: true).serializable_hash
+ResourceSerializer.new(resource, meta: {foo: "bar"}, only_first_name: false, stringify: true, exclude: [:has_many_relationship]).serializable_hash
 => {
      :resource => {
-       :id => 7873392581, 
-       :email => "houston@luettgen.info", 
-       :full_name => "Jamar Graham", 
-       :phone => "627.051.6039 x1475", 
+       :id => 7873392581,
+       :email => "houston@luettgen.info",
+       :full_name => "Jamar Graham",
+       :phone => "627.051.6039 x1475",
        :has_one_relationship => {
-         :id => 6218322696, 
-         :email=>"terrellrobel@pagac.info", 
-         :full_name => "Clay Kuphal", 
+         :id => 6218322696,
+         :email=>"terrellrobel@pagac.info",
+         :full_name => "Clay Kuphal",
          :phone => "1-604-682-0732 x882"
        }
      },
@@ -81,14 +94,14 @@ schema.has_one(:has_one_relationship, schema: schema)
 
 schema.serializable_hash
 => {
-     :id => 7873392581, 
-     :email => "houston@luettgen.info", 
-     :full_name => "Jamar Graham", 
-     :phone => "627.051.6039 x1475", 
+     :id => 7873392581,
+     :email => "houston@luettgen.info",
+     :full_name => "Jamar Graham",
+     :phone => "627.051.6039 x1475",
      :has_one_relationship => {
-       :id => 6218322696, 
-       :email=>"terrellrobel@pagac.info", 
-       :full_name => "Clay Kuphal", 
+       :id => 6218322696,
+       :email=>"terrellrobel@pagac.info",
+       :full_name => "Clay Kuphal",
        :phone => "1-604-682-0732 x882"
      }
    }
@@ -101,8 +114,6 @@ schema.serializable_hash
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## Contributing
 

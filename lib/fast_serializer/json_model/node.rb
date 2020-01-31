@@ -11,11 +11,15 @@ module FastSerializer
         @opts = opts || {}
       end
 
-      def serialize(_resource, _params = {}, context = nil)
+      def injectable?
+        false
+      end
+
+      def serialize(_resource, _params, context = nil)
         raise NotImplementedError
       end
 
-      def included?(_resource, _params = {}, context = nil)
+      def included?(_resource, _params, context = nil)
         raise NotImplementedError
       end
     end
