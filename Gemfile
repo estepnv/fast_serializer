@@ -13,7 +13,7 @@ gem 'faker'
 gem 'pry'
 gem 'rspec', '~> 3.0'
 gem 'rspec-benchmark'
-gem 'pry-byebug'
+gem 'pry-byebug', group: :development
 gem 'allocation_stats'
 gem 'simplecov'
 gem 'benchmark-memory', '~>0.1'
