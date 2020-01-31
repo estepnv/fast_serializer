@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'json'
+
 module FastSerializer
   class Configuration
     attr_reader :coder
