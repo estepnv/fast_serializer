@@ -2,10 +2,20 @@
 
 module FastSerializer
   class Configuration
-    attr_accessor :coder
+    attr_reader :coder
+    attr_accessor :strict
 
     def initialize
       @coder = JSON
+      @strict = false
+    end
+
+    def coder=(obj)
+      if obj.respond_to?(:dump) && obj.respond_to?(:load)
+        @coder = obj
+      else
+        raise ArgumentError, "must respond to #load and #dump methods"
+      end
     end
   end
 

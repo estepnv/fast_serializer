@@ -5,7 +5,7 @@ module FastSerializer
     class Relationship < Attribute
       attr_accessor :serialization_schema
 
-      def initialize(key: nil, method: nil, opts: {}, serializer: nil, schema: nil)
+      def initialize(key: nil, method: nil, opts: {}, serializer: nil, schema: nil, strict: false)
         super
         @serializer_klass = serializer
         @schema = schema

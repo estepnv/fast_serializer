@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pry-byebug'
+
 if !!ENV['COVERAGE']
   require 'simplecov'
   SimpleCov.start do

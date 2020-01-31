@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fast_serializer_ruby (0.5.0)
+    fast_serializer_ruby (0.6.0)
 
 GEM
   remote: https://rubygems.org/
@@ -31,12 +31,14 @@ GEM
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
+    allocation_stats (0.1.5)
     benchmark-malloc (0.1.0)
     benchmark-memory (0.1.2)
       memory_profiler (~> 0.9)
     benchmark-perf (0.5.0)
     benchmark-trend (0.3.0)
     builder (3.2.3)
+    byebug (11.1.1)
     case_transform (0.2)
       activesupport
     coderay (1.1.2)
@@ -72,6 +74,9 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
       spoon (~> 0.0)
+    pry-byebug (3.8.0)
+      byebug (~> 11.0)
+      pry (~> 0.10)
     rack (2.0.7)
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
@@ -118,11 +123,13 @@ PLATFORMS
 DEPENDENCIES
   active_model_serializers (~> 0.10.0)
   activesupport (< 6)
+  allocation_stats
   benchmark-memory (~> 0.1)
   factory_bot
   faker
   fast_serializer_ruby!
   pry
+  pry-byebug
   rake (~> 10.0)
   rspec (~> 3.0)
   rspec-benchmark

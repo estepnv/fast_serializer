@@ -3,7 +3,7 @@
 module FastSerializer
   module JsonModel
     class Array < Relationship
-      def serialize(resources, params = {}, context = nil)
+      def serialize(resources, params, context)
         return if resources.nil?
 
         if @serializer_klass
@@ -13,7 +13,7 @@ module FastSerializer
         end
       end
 
-      def included?(_resources, _params = {}, context = nil)
+      def included?(*)
         true
       end
     end

@@ -5,7 +5,7 @@ module FastSerializer
     class Object < Node
       attr_accessor :attributes
 
-      def initialize(*args)
+      def initialize(args = {})
         super
         @attributes = {}
       end
@@ -14,18 +14,20 @@ module FastSerializer
         attributes[attribute.key] = attribute
       end
 
-      def serialize(resource, params = {}, context = nil)
+      def serialize(resource, params, context)
         return if resource.nil?
 
-        attributes.values.each_with_object({}) do |attribute, res|
+        res = attributes.values.each_with_object({}) do |attribute, res|
           next res unless attribute.included?(resource, params, context)
 
           val = attribute.serialize(resource, params, context)
           res[attribute.key] = val
         end
+
+        res
       end
 
-      def included?(_resource, _params = {}, context = nil)
+      def included?(*)
         true
       end
     end

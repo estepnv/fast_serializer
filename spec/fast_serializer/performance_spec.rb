@@ -2,6 +2,8 @@
 
 require 'spec_helper'
 require 'benchmark'
+require 'objspace'
+require 'allocation_stats'
 require 'benchmark/memory'
 
 class AMSResourceSerializer < ActiveModel::Serializer
@@ -72,10 +74,28 @@ RSpec.describe 'Performance', performance: true do
 
   describe 'memory utilization' do
 
-    allocation_factor = 2.5
+
+
+    specify 'allocation test' do
+      resources = build_list :resource, 100
+
+      stats = AllocationStats.trace {
+        FSResourceSerializer.new(resources).serializable_hash
+      }
+
+      puts stats
+            .allocations
+            .group_by(:sourcefile, :sourceline, :class, :method_id)
+            .sort_by_count
+            .to_text
+
+    end
+
+
+    allocation_factor = 3
     it "allocates less memory #{allocation_factor}x" do
 
-      resources = build_list :resource, 100
+      resources = build_list :resource, 1000
 
       20.times { FSResourceSerializer.new(resources).serializable_hash }
       20.times { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json }
@@ -111,7 +131,7 @@ RSpec.describe 'Performance', performance: true do
       },
       ams: {
         name: 'AMS serializer',
-        speed_factor: 3,
+        speed_factor: 6,
         hash_method: :as_json
       }
     }.freeze
