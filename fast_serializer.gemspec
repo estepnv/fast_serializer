@@ -14,6 +14,8 @@ Gem::Specification.new do |spec|
   spec.description   = 'This library intends to solve such a typical and on the other hand important problem as efficient ruby object to hash transformation.'
   spec.homepage      = 'https://github.com/estepnv/fast_serializer'
   spec.license       = 'MIT'
+  spec.platform      = Gem::Platform::RUBY
+  spec.required_ruby_version = '>= 2.3.0'
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
@@ -31,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{(test|spec|features|git|rspec|travis)/}) }
   end
-  spec.bindir        = 'exe'
+  spec.bindir        = 'bin'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 end
