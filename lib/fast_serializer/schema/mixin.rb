@@ -1,12 +1,13 @@
+# frozen_string_literal: true
+
 module FastSerializer
   class Schema
     module Mixin
-
       module ClassMethods
         attr_accessor :__schema__, :__patched__
 
         def inherited(subclass)
-          subclass.__schema__ = self.__schema__.deep_copy
+          subclass.__schema__ = __schema__.deep_copy
         end
 
         def method_missing(method, *args, &block)
@@ -15,6 +16,18 @@ module FastSerializer
           else
             super
           end
+        end
+
+        def respond_to_missing?(method_name, include_private = false)
+          __schema__.respond_to?(method_name) || super
+        end
+
+        def __patch_with_attribute_definition
+          injectable_attributes = __schema__.serialization_schema.attributes.select { |_key, attribute| attribute.injectable? }
+          injectable_attributes.each { |_, attribute| attribute.inject(self) }
+          self.__patched__ = true
+
+          __patched__.freeze
         end
       end
 
@@ -26,16 +39,14 @@ module FastSerializer
           self.params   = params || {}
         end
 
-        alias_method :object, :resource
+        alias object resource
 
         def serializable_hash(opts = {})
-          self.params = params.merge(opts)
+          Utils.ref_merge(params, opts)
+          self.params = params
 
-          if !self.class.__patched__
-            injectable_attributes = self.class.__schema__.serialization_schema.attributes.select { |key, attribute| attribute.injectable? }
-            injectable_attributes.each { |key, attribute| attribute.inject(self.class) }
-            self.class.__patched__ = true
-            self.class.__patched__.freeze
+          unless self.class.__patched__
+            self.class.__patch_with_attribute_definition
           end
 
           self.class.__schema__.serialize_resource(resource, params, self)

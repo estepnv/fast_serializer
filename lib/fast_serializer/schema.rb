@@ -3,12 +3,8 @@
 require 'forwardable'
 
 module FastSerializer
-
   class Schema
-
     attr_reader :_root, :serialization_schema, :params, :strict
-
-    public
 
     def initialize(params = {}, root = nil, strict = nil)
       @root                   = root
@@ -24,79 +20,98 @@ module FastSerializer
     end
 
     def include=(list)
-      return if !list
+      return unless list
+      return if list.empty?
 
-      if list.any?
-        @params[:include]       = list.map(&:to_sym)
-        @params[:include_index] = @params[:include].map { |key| [key, nil] }.to_h
-      end
+      @params[:include]       = list.map(&:to_sym)
+      @params[:include_index] = @params[:include].map { |key| [key, nil] }.to_h
     end
 
     def exclude=(list)
-      return if !list
+      return unless list
+      return if list.empty?
 
-      if list.any?
-        @params[:exclude]       = list.map(&:to_sym)
-        @params[:exclude_index] = @params[:exclude].map { |key| [key, nil] }.to_h
-      end
+      @params[:exclude]       = list.map(&:to_sym)
+      @params[:exclude_index] = @params[:exclude].map { |key| [key, nil] }.to_h
     end
 
-    # @param [Array] attribute_names
+    # Defines a list of attributes for serialization
+    #
+    # @param attribute_names [Array<String, Symbol>] a list of attributes to serialize
+    # each of these attributes value is fetched calling a corresponding method from a resource instance
+    # passed to the serializer
     def attributes(*attribute_names)
       attribute_names.each do |attribute_name|
-        serialization_schema.add_attribute JsonModel::Attribute.new(
-          key:    attribute_name,
-          method: attribute_name,
+        serialization_schema.add_attribute(
+          JsonModel::Attribute.new(key: attribute_name, method: attribute_name)
         )
       end
     end
 
-    # @param [String] attribute_name
-    # @param [Hash] opts - attribute options
-    # @param [Proc] block - result is used as the attribute value
+    # Defines an attribute for serialization
+    #
+    # @param attribute_name [String, Symbol] an attribute name
+    # @param opts [Hash] attribute options
+    # @option opts [Proc] :if conditional clause. accepts a proc/lambda which has to return a boolean
+    # @option opts [Proc] :unless (see opts:if)
+    # @param block [Proc] result is used as the attribute value
+    #
     def attribute(attribute_name, opts = {}, &block)
-      serialization_schema.add_attribute JsonModel::Attribute.new(
-        key:    attribute_name,
-        method: block,
-        opts:   opts,
+      serialization_schema.add_attribute(
+        JsonModel::Attribute.new(
+          key: attribute_name,
+          method: block,
+          opts: opts
+        )
       )
     end
 
-    # @param [String] attribute_name
-    # @param [Hash] opts - attribute options
+    # Defines an attribute for serialization
+    #
+    # @param attribute_name [String, Symbol] an attribute name
+    # @param opts [Hash] attribute options
+    # @option opts [Proc] :if conditional clause. accepts a proc/lambda which has to return a boolean
+    # @option opts [Proc] :unless (see opts:if)
+    # @option opts [FastSerializer::Schema::Mixin, nil] :serializer a serializer class with injected  module or a inherited class
+    # @option opts [FastSerializer::Schema] :schema
+    #
     def has_one(attribute_name, opts = {})
       serialization_schema.add_attribute JsonModel::HasOneRelationship.new(
-        key:        opts.delete(:key) || attribute_name,
-        method:     opts.delete(:method) || attribute_name,
-        opts:       opts,
-        schema:     opts.delete(:schema),
-        serializer: opts.delete(:serializer),
+        key: opts.delete(:key) || attribute_name,
+        method: opts.delete(:method) || attribute_name,
+        opts: opts,
+        schema: opts.delete(:schema),
+        serializer: opts.delete(:serializer)
       )
     end
 
     alias belongs_to has_one
 
-    # @param [String] attribute_name
-    # @param [Hash] opts - attribute options
+    # @param attribute_name [String]
+    # @param opts [Hash] attribute options
     def has_many(attribute_name, opts = {})
-      serialization_schema.add_attribute JsonModel::HasManyRelationship.new(
-        key:        opts.delete(:key) || attribute_name,
-        method:     opts.delete(:method) || attribute_name,
-        opts:       opts,
-        schema:     opts.delete(:schema),
-        serializer: opts.delete(:serializer),
+      serialization_schema.add_attribute(
+        JsonModel::HasManyRelationship.new(
+          key: opts.delete(:key) || attribute_name,
+          method: opts.delete(:method) || attribute_name,
+          opts: opts,
+          schema: opts.delete(:schema),
+          serializer: opts.delete(:serializer)
+        )
       )
     end
 
     # @param [String] attribute_name
     # @param [Hash] opts - attribute options
     def list(attribute_name, opts = {})
-      serialization_schema.add_attribute JsonModel::Array.new(
-        key:        attribute_name,
-        method:     attribute_name,
-        opts:       opts,
-        schema:     opts.delete(:schema),
-        serializer: opts.delete(:serializer),
+      serialization_schema.add_attribute(
+        JsonModel::Array.new(
+          key: attribute_name,
+          method: attribute_name,
+          opts: opts,
+          schema: opts.delete(:schema),
+          serializer: opts.delete(:serializer)
+        )
       )
     end
 
@@ -116,11 +131,15 @@ module FastSerializer
     end
 
     def serialize_resource(resource, params = {}, context = self)
-      _params_dup = FastSerializer::Utils.symbolize_keys(self.params.merge(params))
+      Utils.ref_merge(self.params, params)
+      _params_dup = FastSerializer::Utils.symbolize_keys(self.params)
       meta        = _params_dup.delete(:meta)
 
-      is_collection = resource.respond_to?(:size) && !resource.respond_to?(:each_pair)
-      is_collection = params.delete(:is_collection) if params.has_key?(:is_collection)
+      is_collection = if params.key?(:is_collection)
+        params.delete(:is_collection)
+      else
+        resource.respond_to?(:size) && !resource.respond_to?(:each_pair)
+      end
 
       root = (_root || _params_dup.delete(:root))
 
@@ -139,7 +158,7 @@ module FastSerializer
 
             end
 
-      res  = { root => res } if root && !root.empty?
+      res = { root => res } if root && !root.empty?
 
       res[:meta] = meta if res.is_a?(Hash) && meta
 

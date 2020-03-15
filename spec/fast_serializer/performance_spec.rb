@@ -92,7 +92,7 @@ RSpec.describe 'Performance', performance: true do
     end
 
 
-    allocation_factor = 3
+    allocation_factor = 6
     it "allocates less memory #{allocation_factor}x" do
 
       resources = build_list :resource, 1000

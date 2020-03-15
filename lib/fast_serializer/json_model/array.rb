@@ -3,6 +3,10 @@
 module FastSerializer
   module JsonModel
     class Array < Relationship
+      # @param resource [Object]
+      # @param params [Hash]
+      # @param context [Hash]
+      # @return [Array]
       def serialize(resources, params, context)
         return if resources.nil?
 

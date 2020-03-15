@@ -5,32 +5,49 @@ module FastSerializer
     class Relationship < Attribute
       attr_accessor :serialization_schema
 
-      def initialize(key: nil, method: nil, opts: {}, serializer: nil, schema: nil, strict: false)
+      # @param serializer [FastSerializer::Schema::Mixin]
+      # @param schema [FastSerializer::Schema]
+      def initialize(serializer: nil, schema: nil, **)
         super
+
         @serializer_klass = serializer
         @schema = schema
 
-        raise ArgumentError, "must provide serializer or schema" if @serializer_klass.nil? && @schema.nil?
+        if @serializer_klass.nil? && @schema.nil?
+          raise ArgumentError, 'must provide serializer or schema'
+        end
       end
 
+      # @param resource [Object]
+      # @param params [Hash]
+      # @param context [Hash]
+      # @return [Boolean]
       def included?(resource, params, context)
         super && include_relation?(params)
       end
 
+      # @param params [Hash]
+      # @return [Boolean]
       def include_relation?(params)
         include?(params) && !exclude?(params)
       end
 
+      # @param params [Hash]
+      # @return [Boolean]
       def exclude?(params)
         return false if params[:exclude].nil?
         return false if params[:exclude].empty?
+
         params[:exclude_index].key?(key)
       end
 
+      # @param params [Hash]
+      # @return [Boolean]
       def include?(params)
         return true if params[:include].nil?
         return false if params[:include].empty?
-        params[:include_index].has_key?(key)
+
+        params[:include_index].key?(key)
       end
     end
   end

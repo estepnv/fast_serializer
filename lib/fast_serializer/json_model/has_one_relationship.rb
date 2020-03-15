@@ -3,7 +3,10 @@
 module FastSerializer
   module JsonModel
     class HasOneRelationship < Relationship
-      def serialize(resource, params, context)
+      # @param resource [Object]
+      # @param params [Hash]
+      # @return [Hash]
+      def serialize(resource, params, _)
         relation = resource.public_send(method)
 
         if @serializer_klass

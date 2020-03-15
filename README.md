@@ -10,7 +10,7 @@ This library intends to solve such a typical and on the other hand important pro
 
 ## Performance 🚀
 - running on ruby 2.6 is **at least 5 times faster** than AMS (benchmarks was borrowed from fast_jsonapi repository)
-- running on ruby 2.6 it consumes **3 times less RAM**
+- running on ruby 2.6 it consumes **6 times less RAM**
 - running on jruby 9.2.7.0 **is at least 15 times faster** than AMS after warming up
 
 ## Compatibility 👌
