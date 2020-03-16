@@ -83,7 +83,7 @@ module FastSerializer
         @cond_arity = cond.arity.abs
         @mixin ||= Module.new
 
-        if RUBY_VERSION <= '2.4.0'
+        if RUBY_VERSION <= '2.5.0'
           @mixin.redefine_method @cond_method_name, &cond
         else
           @mixin.define_method @cond_method_name, &cond
@@ -95,7 +95,7 @@ module FastSerializer
         @method_arity = method.arity.abs
         @mixin = Module.new
 
-        if RUBY_VERSION <= '2.4.0'
+        if RUBY_VERSION <= '2.5.0'
           @mixin.redefine_method @method_name, &method
         else
           @mixin.define_method @method_name, &method

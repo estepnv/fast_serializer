@@ -9,9 +9,9 @@
 This library intends to solve such a typical and on the other hand important problem as efficient ruby object to hash transformation.
 
 ## Performance 🚀
-- running on ruby 2.6 is **at least 5 times faster** than AMS (benchmarks was borrowed from fast_jsonapi repository)
-- running on ruby 2.6 it consumes **6 times less RAM**
-- running on jruby 9.2.7.0 **is at least 15 times faster** than AMS after warming up
+- running on ruby 2.7 is **at least 6 times faster** than AMS (benchmarks was borrowed from fast_jsonapi repository)
+- running on ruby 2.7 it consumes **6 times less RAM**
+- running on jruby 9.2.7.0 **is at least 4 times faster** than AMS after warming up
 
 ## Compatibility 👌
 I tried to keep the API as close as possible to active_model_serializer implementation because we all got used to it.
