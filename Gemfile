@@ -6,9 +6,8 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 gemspec
 
-group :development do
+group :development, :test do
   gem 'rake'
-  gem 'pry-byebug', '~> 3.7.0'
   gem 'pry'
 end
 
