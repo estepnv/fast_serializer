@@ -3,16 +3,18 @@
 module FastSerializer
   module JsonModel
     class HasManyRelationship < Relationship
-      def serialize(resource, params, context)
+      # @param resource [Object]
+      # @param params [Hash]
+      # @return [Array<Hash>]
+      def serialize(resource, params, _context)
         collection = resource.public_send(method)
         return if collection.nil?
 
         if @serializer_klass
           @serializer_klass.new(collection, params).serializable_hash
         elsif @schema
-          collection.map { |resource| @schema.serialize_resource(resource, params) }
+          collection.map { |entry| @schema.serialize_resource(entry, params) }
         end
-
       end
     end
   end

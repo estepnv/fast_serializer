@@ -36,8 +36,8 @@ RSpec.describe 'Instance tests' do
     schema.has_one(:has_one_relationship, schema: schema)
 
     serializable_hash = schema.serialize_resource(resource)
-    expect(serializable_hash[:meta]).to be_present
-    expect(serializable_hash[:has_one_relationship][:meta]).to be_present
+    expect(serializable_hash[:meta][:foo]).to eq 'bar'
+    expect(serializable_hash[:has_one_relationship][:meta]).to be_blank
   end
 
   it 'serializes collection' do
@@ -49,7 +49,6 @@ RSpec.describe 'Instance tests' do
     schema.attribute(:full_name) { |resource| "#{resource.first_name} #{resource.last_name}" }
     schema.attribute(:phone)
     schema.has_one(:has_one_relationship, schema: schema)
-
     serializable_hash = schema.serialize_resource(resources)
     expect(serializable_hash).to be_a(Array)
 

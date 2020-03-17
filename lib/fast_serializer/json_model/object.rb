@@ -10,23 +10,31 @@ module FastSerializer
         @attributes = {}
       end
 
+      # @param attribute [FastSerializer::JsonModel::Node]
       def add_attribute(attribute)
         attributes[attribute.key] = attribute
       end
 
+      # @param resource [Object]
+      # @param params [Hash]
+      # @param context [Hash]
+      # @return [Hash]
       def serialize(resource, params, context)
         return if resource.nil?
 
-        res = attributes.values.each_with_object({}) do |attribute, res|
-          next res unless attribute.included?(resource, params, context)
+        result = {}
+
+        attributes.each do |_, attribute|
+          next unless attribute.included?(resource, params, context)
 
           val = attribute.serialize(resource, params, context)
-          res[attribute.key] = val
+          result[attribute.key] = val
         end
 
-        res
+        result
       end
 
+      # @return [Boolean]
       def included?(*)
         true
       end

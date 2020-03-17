@@ -31,9 +31,8 @@ class FSResourceSerializer
 end
 
 RSpec.describe 'Performance', performance: true do
-
   before(:all) { GC.disable }
-  before(:all) { GC.enable }
+  after(:all) { GC.enable; GC.start }
 
   describe 'speed benchmarks' do
     it 'creates a hash of 100 records under 2ms ' do
@@ -92,7 +91,7 @@ RSpec.describe 'Performance', performance: true do
     end
 
 
-    allocation_factor = 3
+    allocation_factor = 6
     it "allocates less memory #{allocation_factor}x" do
 
       resources = build_list :resource, 1000
@@ -162,13 +161,19 @@ RSpec.describe 'Performance', performance: true do
     def run_hash_benchmark(message, movie_count, serializers)
       data = Hash[serializers.keys.collect { |k| [k, { hash: nil, time: nil, speed_factor: nil }] }]
 
+      100.times do
+        serializers.each_pair do |k, serializer|
+          hash_method = SERIALIZERS[k].key?(:hash_method) ? SERIALIZERS[k][:hash_method] : :to_hash
+          serializer.public_send(hash_method)
+        end
+      end
+
       serializers.each_pair do |k, v|
         hash_method = SERIALIZERS[k].key?(:hash_method) ? SERIALIZERS[k][:hash_method] : :to_hash
         data[k][:time] = Benchmark.measure { data[k][:hash] = v.public_send(hash_method) }.real * 1000
       end
 
       print_stats(message, movie_count, data)
-
       data
     end
 

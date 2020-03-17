@@ -13,3 +13,5 @@
 .rspec_status
 .rspec
 .history
+/.vscode
+.rubocop.yml
