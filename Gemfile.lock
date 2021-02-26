@@ -38,6 +38,7 @@ GEM
     benchmark-perf (0.6.0)
     benchmark-trend (0.4.0)
     builder (3.2.4)
+    byebug (11.1.3)
     case_transform (0.2)
       activesupport
     coderay (1.1.2)
@@ -73,6 +74,9 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
       spoon (~> 0.0)
+    pry-byebug (3.8.0)
+      byebug (~> 11.0)
+      pry (~> 0.10)
     rack (2.2.2)
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
@@ -125,6 +129,7 @@ DEPENDENCIES
   faker
   fast_serializer_ruby!
   pry
+  pry-byebug
   rake
   rspec (~> 3.0)
   rspec-benchmark

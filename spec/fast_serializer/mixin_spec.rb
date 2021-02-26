@@ -145,4 +145,54 @@ RSpec.describe 'Mixin tests' do
     hash = schema.serializable_hash
     expect(hash[:foobar]).to eq 'foobar'
   end
+
+  context 'when a collection with is_collection:false' do
+
+    let(:serializer) do
+      class TestSerializer
+        include FastSerializer::Schema::Mixin
+
+        attribute(:id)
+        attribute(:email)
+        attribute(:full_name) { "#{resource.first_name} #{resource.last_name}" }
+        attribute(:phone)
+        attribute(:object_first_name, if: proc { params[:object] }) { object.first_name }
+        has_one(:has_one_relationship, serializer: self)
+        has_many(:has_many_relationship, serializer: self)
+
+        attribute(:foobar, if: proc { params[:include_weird_attribute] } ) do
+          weird_attribute
+        end
+
+        def weird_attribute
+          'foobar'
+        end
+
+      end
+
+      TestSerializer
+    end
+
+    let(:collection_serializer) do
+      class CollectionSerializer
+        include FastSerializer::Schema::Mixin
+
+        attribute(:collection) do
+          resource.collection.map { |entry| params[:__serializer].new(entry, params).serializable_hash }
+        end
+      end
+
+      CollectionSerializer
+    end
+
+    it 'renders resource' do
+      list = build_list :resource, 2, :has_many_relation
+      model_k = Struct.new(:collection)
+      model = model_k.new(list)
+
+      payload = collection_serializer.new(model, __serializer: serializer, is_collection: false).serializable_hash
+
+      expect(payload[:collection][0][:email]).to eq list[0].email
+    end
+  end
 end
