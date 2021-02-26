@@ -53,8 +53,7 @@ module FastSerializer
         end
 
         def serialized_json(opts = {})
-          self.params = params.merge(opts)
-          self.class.__schema__.serialize_resource_to_json(resource, params, self)
+          FastSerializer.config.coder.dump(serializable_hash(opts))
         end
 
         alias as_json serializable_hash
