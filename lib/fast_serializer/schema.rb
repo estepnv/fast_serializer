@@ -135,10 +135,11 @@ module FastSerializer
       _params_dup = FastSerializer::Utils.symbolize_keys(self.params)
       meta        = _params_dup.delete(:meta)
 
-      is_collection = if params.key?(:is_collection)
+      is_collection = if _params_dup.key?(:is_collection)
+        _params_dup.delete(:is_collection)
         params.delete(:is_collection)
       else
-        resource.respond_to?(:size) && !resource.respond_to?(:each_pair)
+        resource.respond_to?(:each) && !resource.respond_to?(:each_pair)
       end
 
       root = (_root || _params_dup.delete(:root))
@@ -153,9 +154,7 @@ module FastSerializer
               end
 
             else
-
               serialization_schema.serialize(resource, _params_dup, context)
-
             end
 
       res = { root => res } if root && !root.empty?

@@ -15,6 +15,7 @@ require 'faker'
 require 'rspec-benchmark'
 require 'active_model_serializers'
 require 'active_support/core_ext/object/deep_dup'
+require 'pry-byebug'
 
 Dir['./spec/models/**/*.rb'].each { |f| require f }
 Dir['./spec/support/**/*.rb'].each { |f| require f }
