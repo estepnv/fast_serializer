@@ -119,6 +119,7 @@ GEM
 PLATFORMS
   java
   ruby
+  universal-java-1.8
 
 DEPENDENCIES
   active_model_serializers (~> 0.10.0)
@@ -136,4 +137,4 @@ DEPENDENCIES
   simplecov (~> 0.17.1)
 
 BUNDLED WITH
-   2.1.4
+   2.2.31

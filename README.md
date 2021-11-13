@@ -106,8 +106,6 @@ schema.serializable_hash
      }
    }
 
-
-
 ```
 
 

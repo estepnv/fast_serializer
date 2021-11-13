@@ -21,5 +21,8 @@ group :test do
   gem 'benchmark-memory', '~> 0.1'
   gem 'rspec', '~> 3.0'
   gem 'rspec-benchmark'
-  gem 'pry-byebug'
+
+  platform :mri do
+    gem 'pry-byebug'
+  end
 end

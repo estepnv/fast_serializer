@@ -15,7 +15,9 @@ require 'faker'
 require 'rspec-benchmark'
 require 'active_model_serializers'
 require 'active_support/core_ext/object/deep_dup'
-require 'pry-byebug'
+
+SPEEDUP_FACTOR = RUBY_ENGINE == 'jruby' ? 4 : 5
+ActiveModelSerializers.logger.level = Logger::Severity::UNKNOWN
 
 Dir['./spec/models/**/*.rb'].each { |f| require f }
 Dir['./spec/support/**/*.rb'].each { |f| require f }

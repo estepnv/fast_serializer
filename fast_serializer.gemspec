@@ -14,7 +14,6 @@ Gem::Specification.new do |spec|
   spec.description   = 'This library intends to solve such a typical and on the other hand important problem as efficient ruby object to hash transformation.'
   spec.homepage      = 'https://github.com/estepnv/fast_serializer'
   spec.license       = 'MIT'
-  spec.platform      = Gem::Platform::RUBY
   spec.required_ruby_version = '>= 2.3.0'
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
