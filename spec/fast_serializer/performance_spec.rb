@@ -34,6 +34,12 @@ RSpec.describe 'Performance', performance: true do
   before(:all) { GC.disable }
   after(:all) { GC.enable; GC.start }
 
+  before(:all) do
+    resources = build_list :resource, 100
+    FSResourceSerializer.new(resources).serializable_hash
+    ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json
+  end
+
   describe 'speed benchmarks' do
     it 'creates a hash of 100 records under 2ms ' do
       resources = build_list :resource, 100
@@ -58,7 +64,7 @@ RSpec.describe 'Performance', performance: true do
 
     it 'creates a hash of 1000 records under 15ms ' do
       resources = build_list :resource, 1000
-      expect { FSResourceSerializer.new(resources).serializable_hash }.to perform_under(15).ms
+      expect { FSResourceSerializer.new(resources).serializable_hash }.to perform_under(15).ms.warmup(3)
     end
 
     it 'creates a hash of 1000 records with dependencies under 25ms ' do
@@ -67,56 +73,57 @@ RSpec.describe 'Performance', performance: true do
         FSResourceSerializer.new(resources).serializable_hash
       }.to perform_faster_than {
         ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json
-      }.at_least(10).times
+      }.at_least(5).times
     end
   end
 
   describe 'memory utilization' do
 
+    if RUBY_ENGINE != 'jruby'
+      specify 'allocation test' do
+        resources = build_list :resource, 100
+
+        stats = AllocationStats.trace {
+          FSResourceSerializer.new(resources).serializable_hash
+        }
+
+        puts stats
+              .allocations
+              .group_by(:sourcefile, :sourceline, :class, :method_id)
+              .sort_by_count
+              .to_text
+
+      end
 
 
-    specify 'allocation test' do
-      resources = build_list :resource, 100
+      allocation_factor = 6
+      it "allocates less memory #{allocation_factor}x" do
 
-      stats = AllocationStats.trace {
-        FSResourceSerializer.new(resources).serializable_hash
-      }
+        resources = build_list :resource, 1000
 
-      puts stats
-            .allocations
-            .group_by(:sourcefile, :sourceline, :class, :method_id)
-            .sort_by_count
-            .to_text
+        20.times { FSResourceSerializer.new(resources).serializable_hash }
+        20.times { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json }
 
+        job = Benchmark::Memory::Job.new
+
+        job.report('fast-serializer') { FSResourceSerializer.new(resources).serializable_hash }
+        job.report('active-model-serializer') { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json }
+
+        job.run
+        job.full_report
+        job.compare!
+        job.run_comparison
+
+        measurements_map = job.full_report.comparison.entries.map { |comp_entry| [comp_entry.label, comp_entry.measurement] }.to_h
+
+        allocation = -> (name) { measurements_map[name].objects.allocated }
+        mem_cons = -> (name) { measurements_map[name].memory.allocated }
+
+        expect(allocation.('fast-serializer') * allocation_factor).to be < allocation.('active-model-serializer')
+        expect(mem_cons.('fast-serializer') * allocation_factor) .to be < mem_cons.('active-model-serializer')
+      end
     end
 
-
-    allocation_factor = 6
-    it "allocates less memory #{allocation_factor}x" do
-
-      resources = build_list :resource, 1000
-
-      20.times { FSResourceSerializer.new(resources).serializable_hash }
-      20.times { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json }
-
-      job = Benchmark::Memory::Job.new
-
-      job.report('fast-serializer') { FSResourceSerializer.new(resources).serializable_hash }
-      job.report('active-model-serializer') { ActiveModelSerializers::SerializableResource.new(resources, each_serializer: AMSResourceSerializer).as_json }
-
-      job.run
-      job.full_report
-      job.compare!
-      job.run_comparison
-
-      measurements_map = job.full_report.comparison.entries.map { |comp_entry| [comp_entry.label, comp_entry.measurement] }.to_h
-
-      allocation = -> (name) { measurements_map[name].objects.allocated }
-      mem_cons = -> (name) { measurements_map[name].memory.allocated }
-
-      expect(allocation.('fast-serializer') * allocation_factor).to be < allocation.('active-model-serializer')
-      expect(mem_cons.('fast-serializer') * allocation_factor) .to be < mem_cons.('active-model-serializer')
-    end
   end
 
   # copy-pasted from here
@@ -126,11 +133,10 @@ RSpec.describe 'Performance', performance: true do
       fjs: {
         name: 'Fast Serializer',
         hash_method: :serializable_hash,
-        json_method: :serialized_json
       },
       ams: {
         name: 'AMS serializer',
-        speed_factor: 6,
+        speed_factor: SPEEDUP_FACTOR,
         hash_method: :as_json
       }
     }.freeze

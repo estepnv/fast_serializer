@@ -12,14 +12,17 @@ group :development, :test do
 end
 
 group :test do
-  gem 'active_model_serializers', '~> 0.10.0'
+  gem 'active_model_serializers'
   gem 'factory_bot'
   gem 'faker'
-  gem 'activesupport', '< 6'
+  gem 'activesupport'
   gem 'allocation_stats'
-  gem 'simplecov', '~> 0.17.1'
-  gem 'benchmark-memory', '~> 0.1'
-  gem 'rspec', '~> 3.0'
+  gem 'simplecov'
+  gem 'benchmark-memory'
+  gem 'rspec'
   gem 'rspec-benchmark'
-  gem 'pry-byebug'
+
+  platform :mri do
+    gem 'pry-byebug'
+  end
 end

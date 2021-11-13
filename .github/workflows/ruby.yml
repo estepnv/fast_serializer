@@ -1,0 +1,42 @@
+name: Ruby
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby-version: ['2.3', '2.4', '2.5', '2.6', '2.7', 'jruby']
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@473e4d8fe5dd94ee328fdfca9f8c9c7afc9dae5e
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+        bundler-cache: true
+    - run: bundle exec rspec --tag ~performance:true
+
+  coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby-version: ['2.7']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@473e4d8fe5dd94ee328fdfca9f8c9c7afc9dae5e
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+        bundler-cache: true
+    - name: Test & publish code coverage
+      uses: paambaati/codeclimate-action@v2.7.5
+      with:
+        coverageCommand: bundle exec rspec --tag ~performance:true
+      env:
+        CC_TEST_REPORTER_ID: 99325a42b78ef51a9d51574d20dbcd6acdfe75c8568f1433f73b61f17149e05d
+        COVERAGE: 1
+
