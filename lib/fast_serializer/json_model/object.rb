@@ -1,11 +1,10 @@
 # frozen_string_literal: true
-
 module FastSerializer
   module JsonModel
     class Object < Node
       attr_accessor :attributes
 
-      def initialize(args = {})
+      def initialize
         super
         @attributes = {}
       end
@@ -20,7 +19,7 @@ module FastSerializer
       # @param context [Hash]
       # @return [Hash]
       def serialize(resource, params, context)
-        return if resource.nil?
+        return if !resource
 
         result = {}
 

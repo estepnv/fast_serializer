@@ -43,7 +43,7 @@ module FastSerializer
     def attributes(*attribute_names)
       attribute_names.each do |attribute_name|
         serialization_schema.add_attribute(
-          JsonModel::Attribute.new(key: attribute_name, method: attribute_name)
+          JsonModel::Attribute.new(attribute_name, attribute_name)
         )
       end
     end
@@ -57,12 +57,11 @@ module FastSerializer
     # @param block [Proc] result is used as the attribute value
     #
     def attribute(attribute_name, opts = {}, &block)
+      method = (opts.is_a?(String) || opts.is_a?(Symbol)) ? opts : block
+      opts = opts.is_a?(Hash) ? opts : {}
+
       serialization_schema.add_attribute(
-        JsonModel::Attribute.new(
-          key: attribute_name,
-          method: block,
-          opts: opts
-        )
+        JsonModel::Attribute.new(attribute_name, method, opts)
       )
     end
 
@@ -76,12 +75,14 @@ module FastSerializer
     # @option opts [FastSerializer::Schema] :schema
     #
     def has_one(attribute_name, opts = {})
-      serialization_schema.add_attribute JsonModel::HasOneRelationship.new(
-        key: opts.delete(:key) || attribute_name,
-        method: opts.delete(:method) || attribute_name,
-        opts: opts,
-        schema: opts.delete(:schema),
-        serializer: opts.delete(:serializer)
+      serialization_schema.add_attribute(
+        JsonModel::HasOneRelationship.new(
+          opts.delete(:key) || attribute_name,
+          opts.delete(:method) || attribute_name,
+          opts.delete(:serializer),
+          opts.delete(:schema),
+          opts,
+        )
       )
     end
 
@@ -92,11 +93,11 @@ module FastSerializer
     def has_many(attribute_name, opts = {})
       serialization_schema.add_attribute(
         JsonModel::HasManyRelationship.new(
-          key: opts.delete(:key) || attribute_name,
-          method: opts.delete(:method) || attribute_name,
-          opts: opts,
-          schema: opts.delete(:schema),
-          serializer: opts.delete(:serializer)
+          opts.delete(:key) || attribute_name,
+          opts.delete(:method) || attribute_name,
+          opts.delete(:serializer),
+          opts.delete(:schema),
+          opts,
         )
       )
     end
@@ -106,11 +107,11 @@ module FastSerializer
     def list(attribute_name, opts = {})
       serialization_schema.add_attribute(
         JsonModel::Array.new(
-          key: attribute_name,
-          method: attribute_name,
-          opts: opts,
-          schema: opts.delete(:schema),
-          serializer: opts.delete(:serializer)
+          attribute_name,
+          attribute_name,
+          opts.delete(:serializer),
+          opts.delete(:schema),
+          opts,
         )
       )
     end
@@ -150,7 +151,7 @@ module FastSerializer
                 # need to bind context
                 resource.map { |entry| context.class.new(entry, _params_dup).serializable_hash }
               else
-                JsonModel::Array.new(schema: serialization_schema).serialize(resource, _params_dup, context)
+                JsonModel::Array.new(:base, :base, nil, serialization_schema).serialize(resource, _params_dup, context)
               end
 
             else

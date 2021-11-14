@@ -3,7 +3,11 @@
 module FastSerializer
   module JsonModel
     class Attribute < Node
-      attr_accessor :mixin,
+      attr_accessor :key,
+                    :method,
+                    :context,
+                    :opts,
+                    :mixin,
                     :method_name,
                     :method_arity,
                     :cond,
@@ -11,18 +15,25 @@ module FastSerializer
                     :cond_method_name,
                     :injected
 
-      def initialize(*)
-        super
+      def initialize(key, method, opts = {})
+        super()
 
-        @mixin = nil
-        @method_name = nil
+        @opts = opts || {}
+        @injected_methods = Hash.new { |h, method_name| h[method_name] = true }
+        @key = key.to_sym
+        @method = !method ? key : method
+
+        @mixin = Module.new
         @injected = false
-        @cond_method_name = nil
-        @cond = nil
-        @cond = @opts[:if] || @opts[:unless] || @cond
 
-        init_with_proc if method.is_a?(Proc)
-        init_with_cond if !cond.nil? && cond.is_a?(Proc)
+        @method_name = @method && !@method.is_a?(Proc) ? @method : nil
+        @method_arity = @method.is_a?(Proc) ? [@method.arity, 0].max : nil
+        @cond = @opts[:if] || @opts[:unless]
+        @cond_method_name = @cond && !@cond.is_a?(Proc) ? @cond : nil
+        @cond_arity = @cond.is_a?(Proc) ? [@cond.arity, 0].max : nil
+
+        init_with_proc if @method.is_a?(Proc)
+        init_with_cond if @cond && @cond.is_a?(Proc)
       end
 
       def injectable?
@@ -39,14 +50,14 @@ module FastSerializer
       # @param context [Hash]
       # @return [Object]
       def serialize(resource, params, context)
-        can_execute_on_mixin = injected && !method_name.nil? && !context.nil?
+        can_execute_on_mixin = !!(injected && method_name && @injected_methods.key?(method_name) && context)
 
         val = if can_execute_on_mixin
                 call_method_on_context(context, method_name, method_arity, resource, params)
               elsif method.is_a?(Proc)
                 call_proc_binding_to_context(context, method, method_arity, resource, params)
               else
-                resource.public_send(method)
+                resource.public_send(method_name)
               end
 
         val.freeze
@@ -59,9 +70,9 @@ module FastSerializer
       # @param context [Hash]
       # @return [Boolean]
       def included?(resource, params, context)
-        return true if cond.nil?
+        return true if !cond
 
-        can_execute_on_mixin = injected && !cond_method_name.nil? && !context.nil?
+        can_execute_on_mixin = !!(injected && cond_method_name && @injected_methods.key?(cond_method_name) && context)
 
         res = if can_execute_on_mixin
                 call_method_on_context(context, cond_method_name, cond_arity, resource, params)
@@ -80,8 +91,7 @@ module FastSerializer
 
       def init_with_cond
         @cond_method_name = "__#{key}_cond__"
-        @cond_arity = cond.arity.abs
-        @mixin ||= Module.new
+        @injected_methods[@cond_method_name]
 
         if RUBY_VERSION <= '2.5.0'
           @mixin.redefine_method @cond_method_name, &cond
@@ -92,8 +102,7 @@ module FastSerializer
 
       def init_with_proc
         @method_name = "__#{key}__"
-        @method_arity = method.arity.abs
-        @mixin = Module.new
+        @injected_methods[@method_name]
 
         if RUBY_VERSION <= '2.5.0'
           @mixin.redefine_method @method_name, &method

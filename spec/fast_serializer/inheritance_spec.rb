@@ -17,11 +17,11 @@ RSpec.describe 'Inherits schema' do
     end
 
     class InheritedResourceSerializer < ResourceSerializer
-      attribute(:yet_another_email, &:email)
+      attribute(:yet_another_email, :email)
     end
 
     class InheritedResourceSerializer2 < ResourceSerializer
-      attribute(:yet_another_email_2, &:email)
+      attribute(:yet_another_email_2, :email)
     end
   end
 
@@ -29,8 +29,8 @@ RSpec.describe 'Inherits schema' do
     inherited_resource_serializer_h = InheritedResourceSerializer.new(resource).serializable_hash
 
     expect(inherited_resource_serializer_h[:foo]).to eq('foo')
-    expect(inherited_resource_serializer_h[:yet_another_email]).to eq(resource.email)
     expect(inherited_resource_serializer_h[:email]).to eq(resource.email)
+    expect(inherited_resource_serializer_h[:yet_another_email]).to eq(resource.email)
     expect(inherited_resource_serializer_h[:yet_another_email_2]).to be_blank
 
     inherited_resource_serializer_2_h = InheritedResourceSerializer2.new(resource).serializable_hash
