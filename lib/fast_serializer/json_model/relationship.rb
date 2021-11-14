@@ -7,13 +7,13 @@ module FastSerializer
 
       # @param serializer [FastSerializer::Schema::Mixin]
       # @param schema [FastSerializer::Schema]
-      def initialize(serializer: nil, schema: nil, **)
-        super
+      def initialize(key, method, serializer = nil, schema = nil, opts = {})
+        super(key, method, opts)
 
         @serializer_klass = serializer
         @schema = schema
 
-        if @serializer_klass.nil? && @schema.nil?
+        if !@serializer_klass && !@schema
           raise ArgumentError, 'must provide serializer or schema'
         end
       end
