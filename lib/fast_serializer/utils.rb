@@ -9,6 +9,8 @@ module FastSerializer
     end
 
     def self.ref_merge(hash_a, hash_b)
+      return if hash_a.equal?(hash_b)
+
       hash_b.each do |key, value|
         hash_a[key] = value
       end
