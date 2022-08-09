@@ -5,7 +5,7 @@ module FastSerializer
     def self.symbolize_keys(hash)
       res = {}
       hash.each { |key, value| res[key.to_sym] = value }
-      hash
+      res
     end
 
     def self.ref_merge(hash_a, hash_b)

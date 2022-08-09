@@ -132,8 +132,10 @@ module FastSerializer
     end
 
     def serialize_resource(resource, params = {}, context = self)
-      Utils.ref_merge(self.params, params)
       _params_dup = FastSerializer::Utils.symbolize_keys(self.params)
+      Utils.ref_merge(_params_dup, params)
+      self.params.delete(:meta)
+
       meta        = _params_dup.delete(:meta)
 
       is_collection = if _params_dup.key?(:is_collection)
